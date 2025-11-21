@@ -1,0 +1,28 @@
+image: node:25
+
+stages:
+  - quality
+
+# Cache pnpm packages for speed
+cache:
+  key:
+    files:
+      - pnpm-lock.yaml
+  paths:
+    - .pnpm-store
+
+# Runs before every job
+before_script:
+  - npm install -g pnpm
+  - pnpm config set store-dir .pnpm-store
+  - pnpm install
+
+quality_checks:
+  stage: quality
+  tags:
+    - test
+  script:
+    # 1. Run the linter
+    - pnpm run lint
+    # 2. Fail if any file is misformatted
+    - pnpm run format:check
