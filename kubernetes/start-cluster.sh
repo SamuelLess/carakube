@@ -34,7 +34,17 @@ fi
 # 🔑 ALWAYS regenerate kubeconfig, even if cluster already existed
 echo "Writing kubeconfig for cluster $KIND_CLUSTER_NAME..."
 mkdir -p /root/.kube
-kind get kubeconfig --name "$KIND_CLUSTER_NAME" > /root/.kube/config
+kind get kubeconfig --name "$KIND_CLUSTER_NAME" > /tmp/kubeconfig.tmp
+
+# Replace localhost/0.0.0.0 with 'cluster' so other containers can reach it
+sed -i 's/0\.0\.0\.0/cluster/g' /tmp/kubeconfig.tmp
+sed -i 's/127\.0\.0\.1/cluster/g' /tmp/kubeconfig.tmp
+sed -i 's/localhost/cluster/g' /tmp/kubeconfig.tmp
+
+# Disable TLS verification since the cert is for localhost, not 'cluster'
+kubectl --kubeconfig=/tmp/kubeconfig.tmp config set-cluster "kind-${KIND_CLUSTER_NAME}" --insecure-skip-tls-verify=true
+
+mv /tmp/kubeconfig.tmp /root/.kube/config
 export KUBECONFIG=/root/.kube/config
 
 # Optional: wait for API to be responsive

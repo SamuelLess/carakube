@@ -25,6 +25,10 @@ def main():
             print("\n--- Flux System Pods ---", flush=True)
             subprocess.run(["kubectl", "get", "pods", "-n", "flux-system"], check=False) # might fail if ns doesn't exist yet
 
+            print("\n--- Default Namespace Pods ---", flush=True)
+            subprocess.run(["kubectl", "get", "pods", "-n", "default"], check=False) # might fail if ns doesn't exist yet
+
+
         except subprocess.CalledProcessError as e:
             print(f"Error communicating with cluster: {e}", flush=True)
         except Exception as e:

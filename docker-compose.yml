@@ -44,6 +44,8 @@ services:
     build:
       context: ./kubernetes
     privileged: true
+    volumes:
+      - kubeconfig-data:/root/.kube
     networks:
       - carakube-net
 
@@ -52,12 +54,17 @@ services:
       context: ./operator
     depends_on:
       - cluster
+    volumes:
+      - kubeconfig-data:/kubeconfig:ro
+    environment:
+      - KUBECONFIG=/kubeconfig/config
     networks:
       - carakube-net
 
 volumes:
   traefik-certs:
   traefik-logs:
+  kubeconfig-data:
 
 networks:
   traefik-proxy:
