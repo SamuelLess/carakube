@@ -5,6 +5,7 @@ Converts Kubernetes cluster topology into a simplified graph format
 with nodes (namespaces, nodes, pods, services) and links (contains, runs-on, exposes).
 """
 
+import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from kubernetes import client
@@ -20,6 +21,39 @@ class ClusterGraphBuilder:
         self.scan_data = scan_data or {}
         self.nodes: List[Dict[str, Any]] = []
         self.links: List[Dict[str, Any]] = []
+
+    @staticmethod
+    def _generate_vulnerability_id(vuln_type: str, namespace: str = "", 
+                                   pod_name: str = "", container: str = "", 
+                                   service_name: str = "", **kwargs: Any) -> str:
+        """
+        Generate a stable vulnerability ID based on location and type.
+        
+        Args:
+            vuln_type: The type of vulnerability
+            namespace: Namespace where the vulnerability was found
+            pod_name: Pod name (if applicable)
+            container: Container name (if applicable)
+            service_name: Service name (if applicable)
+            **kwargs: Additional context for uniqueness (e.g., role_name, image)
+            
+        Returns:
+            A stable hash-based ID for the vulnerability
+        """
+        # Build a deterministic string from all components
+        components = [vuln_type, namespace, pod_name, container, service_name]
+        
+        # Add any additional kwargs in sorted order for consistency
+        for key in sorted(kwargs.keys()):
+            if kwargs[key]:
+                components.append(f"{key}:{kwargs[key]}")
+        
+        # Create a unique string and hash it
+        unique_string = "|".join(str(c) for c in components if c)
+        hash_digest = hashlib.sha256(unique_string.encode()).hexdigest()
+        
+        # Return first 16 characters for brevity
+        return f"vuln-{hash_digest[:16]}"
 
     def add_namespace_nodes(self) -> None:
         """Add namespace nodes to the graph."""
@@ -676,8 +710,15 @@ class ClusterGraphBuilder:
                 finding.get("pod_name") == pod.metadata.name):
                 # Add pod-level vulnerabilities
                 for issue in finding.get("pod_level", []):
+                    vuln_type = issue.get("type")
+                    vuln_id = self._generate_vulnerability_id(
+                        vuln_type=vuln_type,
+                        namespace=pod.metadata.namespace,
+                        pod_name=pod.metadata.name
+                    )
                     vulnerabilities.append({
-                        "type": issue.get("type"),
+                        "id": vuln_id,
+                        "type": vuln_type,
                         "severity": issue.get("severity"),
                         "title": issue.get("description"),
                         "details": issue
@@ -685,11 +726,20 @@ class ClusterGraphBuilder:
                 # Add container-level vulnerabilities
                 for container in finding.get("containers", []):
                     for vuln in container.get("vulnerabilities", []):
+                        vuln_type = vuln.get("type")
+                        container_name = container.get("container_name")
+                        vuln_id = self._generate_vulnerability_id(
+                            vuln_type=vuln_type,
+                            namespace=pod.metadata.namespace,
+                            pod_name=pod.metadata.name,
+                            container=container_name
+                        )
                         vulnerabilities.append({
-                            "type": vuln.get("type"),
+                            "id": vuln_id,
+                            "type": vuln_type,
                             "severity": vuln.get("severity"),
                             "title": vuln.get("description"),
-                            "container": container.get("container_name")
+                            "container": container_name
                         })
         
         # Check resource limits
@@ -698,11 +748,19 @@ class ClusterGraphBuilder:
             if (finding.get("namespace") == pod.metadata.namespace and 
                 finding.get("pod_name") == pod.metadata.name):
                 for container in finding.get("containers", []):
+                    container_name = container.get("container_name")
+                    vuln_id = self._generate_vulnerability_id(
+                        vuln_type="missing_resource_limits",
+                        namespace=pod.metadata.namespace,
+                        pod_name=pod.metadata.name,
+                        container=container_name
+                    )
                     vulnerabilities.append({
+                        "id": vuln_id,
                         "type": "missing_resource_limits",
                         "severity": container.get("severity"),
                         "title": container.get("description"),
-                        "container": container.get("container_name"),
+                        "container": container_name,
                         "missing_limits": container.get("missing_limits")
                     })
         
@@ -712,11 +770,20 @@ class ClusterGraphBuilder:
             if (finding.get("namespace") == pod.metadata.namespace and 
                 finding.get("pod_name") == pod.metadata.name):
                 for issue in finding.get("issues", []):
+                    vuln_type = issue.get("type")
+                    service_account = finding.get("service_account")
+                    vuln_id = self._generate_vulnerability_id(
+                        vuln_type=vuln_type,
+                        namespace=pod.metadata.namespace,
+                        pod_name=pod.metadata.name,
+                        service_account=service_account
+                    )
                     vulnerabilities.append({
-                        "type": issue.get("type"),
+                        "id": vuln_id,
+                        "type": vuln_type,
                         "severity": issue.get("severity"),
                         "title": issue.get("description"),
-                        "service_account": finding.get("service_account")
+                        "service_account": service_account
                     })
         
         # Check image security
@@ -726,12 +793,23 @@ class ClusterGraphBuilder:
                 finding.get("pod_name") == pod.metadata.name):
                 for container in finding.get("containers", []):
                     for issue in container.get("issues", []):
+                        vuln_type = issue.get("type")
+                        container_name = container.get("container_name")
+                        image = container.get("image")
+                        vuln_id = self._generate_vulnerability_id(
+                            vuln_type=vuln_type,
+                            namespace=pod.metadata.namespace,
+                            pod_name=pod.metadata.name,
+                            container=container_name,
+                            image=image
+                        )
                         vulnerabilities.append({
-                            "type": issue.get("type"),
+                            "id": vuln_id,
+                            "type": vuln_type,
                             "severity": issue.get("severity"),
                             "title": issue.get("description"),
-                            "container": container.get("container_name"),
-                            "image": container.get("image")
+                            "container": container_name,
+                            "image": image
                         })
         
         return vulnerabilities
@@ -748,8 +826,14 @@ class ClusterGraphBuilder:
                 # Check if it's a namespace without NetworkPolicy
                 if finding.get("type") == "namespace_without_netpol":
                     for issue in finding.get("issues", []):
+                        vuln_type = issue.get("type")
+                        vuln_id = self._generate_vulnerability_id(
+                            vuln_type=vuln_type,
+                            namespace=namespace
+                        )
                         vulnerabilities.append({
-                            "type": issue.get("type"),
+                            "id": vuln_id,
+                            "type": vuln_type,
                             "severity": issue.get("severity"),
                             "title": issue.get("description")
                         })
@@ -759,12 +843,19 @@ class ClusterGraphBuilder:
         for finding in rbac_wildcards:
             # ClusterRoles are cluster-wide but we show them in each namespace
             for rule in finding.get("dangerous_rules", []):
+                role_name = finding.get("role_name")
+                vuln_id = self._generate_vulnerability_id(
+                    vuln_type="rbac_wildcard",
+                    namespace=namespace,
+                    role_name=role_name
+                )
                 vulnerabilities.append({
+                    "id": vuln_id,
                     "type": "rbac_wildcard",
                     "severity": rule.get("severity"),
-                    "title": f"Dangerous ClusterRole: {finding.get('role_name')}",
+                    "title": f"Dangerous ClusterRole: {role_name}",
                     "description": rule.get("description"),
-                    "role_name": finding.get("role_name")
+                    "role_name": role_name
                 })
         
         return vulnerabilities
@@ -780,8 +871,15 @@ class ClusterGraphBuilder:
             if (finding.get("namespace") == service.metadata.namespace and 
                 finding.get("service_name") == service.metadata.name):
                 for issue in finding.get("issues", []):
+                    vuln_type = issue.get("type")
+                    vuln_id = self._generate_vulnerability_id(
+                        vuln_type=vuln_type,
+                        namespace=service.metadata.namespace,
+                        service_name=service.metadata.name
+                    )
                     vulnerabilities.append({
-                        "type": issue.get("type"),
+                        "id": vuln_id,
+                        "type": vuln_type,
                         "severity": issue.get("severity"),
                         "title": issue.get("description"),
                         "service_type": finding.get("type"),

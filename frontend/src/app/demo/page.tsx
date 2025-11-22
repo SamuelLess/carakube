@@ -99,7 +99,7 @@ const DemoPage = () => {
           (n.vulnerabilities || []).map(
             (v) =>
               ({
-                id: n.id,
+                nodeId: n.id,
                 ...v,
               }) as unknown as VulnerabilityWithId
           )

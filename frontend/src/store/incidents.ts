@@ -11,7 +11,7 @@ import type { Vulnerability } from "@/lib/apischema";
 //   prLink: string;
 // }
 
-export type VulnerabilityWithId = Vulnerability & { id: string };
+export type VulnerabilityWithId = Vulnerability & { nodeId: string };
 
 interface IncidentStore {
   incidents: VulnerabilityWithId[];

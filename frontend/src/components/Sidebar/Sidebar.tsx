@@ -22,7 +22,7 @@ export const Sidebar = () => {
 
   // Filter incidents based on selected node
   const filteredIncidents = selectedNodeId
-    ? incidents.filter((i) => i.id === selectedNodeId)
+    ? incidents.filter((i) => i.nodeId === selectedNodeId)
     : incidents;
 
   const criticals = filteredIncidents.filter((i) => i.severity === "critical");

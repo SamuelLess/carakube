@@ -10,6 +10,7 @@ const severitySchema = z.union([
 
 // Container Security vulnerabilities
 const privilegedContainerSchema = z.object({
+  id: z.string(),
   type: z.literal("privileged_container"),
   severity: severitySchema,
   title: z.string(),
@@ -18,6 +19,7 @@ const privilegedContainerSchema = z.object({
 });
 
 const runningAsRootSchema = z.object({
+  id: z.string(),
   type: z.literal("running_as_root"),
   severity: severitySchema,
   title: z.string(),
@@ -25,6 +27,7 @@ const runningAsRootSchema = z.object({
 });
 
 const dangerousCapabilitiesSchema = z.object({
+  id: z.string(),
   type: z.literal("dangerous_capabilities"),
   severity: severitySchema,
   title: z.string(),
@@ -32,6 +35,7 @@ const dangerousCapabilitiesSchema = z.object({
 });
 
 const hostNetworkSchema = z.object({
+  id: z.string(),
   type: z.literal("host_network"),
   severity: severitySchema,
   title: z.string(),
@@ -39,6 +43,7 @@ const hostNetworkSchema = z.object({
 });
 
 const hostPidSchema = z.object({
+  id: z.string(),
   type: z.literal("host_pid"),
   severity: severitySchema,
   title: z.string(),
@@ -46,6 +51,7 @@ const hostPidSchema = z.object({
 });
 
 const hostIpcSchema = z.object({
+  id: z.string(),
   type: z.literal("host_ipc"),
   severity: severitySchema,
   title: z.string(),
@@ -53,6 +59,7 @@ const hostIpcSchema = z.object({
 });
 
 const hostPathMountSchema = z.object({
+  id: z.string(),
   type: z.literal("host_path_mount"),
   severity: severitySchema,
   title: z.string(),
@@ -61,6 +68,7 @@ const hostPathMountSchema = z.object({
 
 // Resource Limits vulnerabilities
 const missingResourceLimitsSchema = z.object({
+  id: z.string(),
   type: z.literal("missing_resource_limits"),
   severity: severitySchema,
   title: z.string(),
@@ -70,6 +78,7 @@ const missingResourceLimitsSchema = z.object({
 
 // ServiceAccount vulnerabilities
 const automountedSaTokenSchema = z.object({
+  id: z.string(),
   type: z.literal("automounted_sa_token"),
   severity: severitySchema,
   title: z.string(),
@@ -77,6 +86,7 @@ const automountedSaTokenSchema = z.object({
 });
 
 const defaultServiceAccountSchema = z.object({
+  id: z.string(),
   type: z.literal("default_serviceaccount"),
   severity: severitySchema,
   title: z.string(),
@@ -85,6 +95,7 @@ const defaultServiceAccountSchema = z.object({
 
 // Network Exposure vulnerabilities
 const nodeportServiceSchema = z.object({
+  id: z.string(),
   type: z.literal("nodeport_service"),
   severity: severitySchema,
   title: z.string(),
@@ -93,6 +104,7 @@ const nodeportServiceSchema = z.object({
 });
 
 const unrestrictedLoadbalancerSchema = z.object({
+  id: z.string(),
   type: z.literal("unrestricted_loadbalancer"),
   severity: severitySchema,
   title: z.string(),
@@ -101,6 +113,7 @@ const unrestrictedLoadbalancerSchema = z.object({
 });
 
 const loadbalancerServiceSchema = z.object({
+  id: z.string(),
   type: z.literal("loadbalancer_service"),
   severity: severitySchema,
   title: z.string(),
@@ -109,6 +122,7 @@ const loadbalancerServiceSchema = z.object({
 });
 
 const noNetworkPolicySchema = z.object({
+  id: z.string(),
   type: z.literal("no_network_policy"),
   severity: severitySchema,
   title: z.string(),
@@ -116,6 +130,7 @@ const noNetworkPolicySchema = z.object({
 
 // RBAC vulnerabilities
 const rbacWildcardSchema = z.object({
+  id: z.string(),
   type: z.literal("rbac_wildcard"),
   severity: severitySchema,
   title: z.string(),
@@ -125,6 +140,7 @@ const rbacWildcardSchema = z.object({
 
 // Image Security vulnerabilities
 const mutableImageTagSchema = z.object({
+  id: z.string(),
   type: z.literal("mutable_image_tag"),
   severity: severitySchema,
   title: z.string(),
@@ -133,6 +149,7 @@ const mutableImageTagSchema = z.object({
 });
 
 const untrustedRegistrySchema = z.object({
+  id: z.string(),
   type: z.literal("untrusted_registry"),
   severity: severitySchema,
   title: z.string(),
