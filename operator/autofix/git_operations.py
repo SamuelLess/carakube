@@ -9,7 +9,7 @@ from typing import Dict, Any
 import requests
 
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN", "")
 GITHUB_REPO_OWNER = os.getenv("GITHUB_REPO_OWNER", "SamuelLess")
 GITHUB_REPO_NAME = os.getenv("GITHUB_REPO_NAME", "hackatum-k8s-flux")
 
@@ -79,7 +79,7 @@ def commit_and_push_changes(repo_dir: Path, branch_name: str, commit_message: st
         )
         
         # Push to remote with authentication
-        remote_url = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}.git"
+        remote_url = f"https://{ACCESS_TOKEN}@github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}.git"
         subprocess.run(
             ["git", "push", remote_url, branch_name],
             cwd=repo_dir,
@@ -112,7 +112,7 @@ def create_pull_request(
     """
     url = f"https://api.github.com/repos/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}/pulls"
     headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
+        "Authorization": f"token {ACCESS_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
     data = {
