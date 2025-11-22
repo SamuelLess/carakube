@@ -39,15 +39,16 @@ const getLayoutedElements = async (
     id: "root",
     layoutOptions: options,
     children: sortedNodes.map((node) => {
-      const actualWidth = node.width || 180;
-      const actualHeight = node.height || 60;
+      // Use fixed base dimensions to prevent accumulation on re-layout
+      const baseWidth = 180;
+      const baseHeight = 60;
       // Add extra space for the node type label positioned above the node
       const labelSpacing = 5;
 
       return {
         ...node,
-        width: actualWidth,
-        height: actualHeight + labelSpacing,
+        width: baseWidth,
+        height: baseHeight + labelSpacing,
       };
     }),
     edges: sortedEdges.map((edge) => ({

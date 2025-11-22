@@ -30,9 +30,34 @@ async def get_graph():
         if GRAPH_OUTPUT_FILE.exists():
             with open(GRAPH_OUTPUT_FILE, "r") as f:
                 data = json.load(f)
+            
+            # Check if cluster is initializing (has data file but no nodes)
+            nodes = data.get("nodes", [])
+            timestamp = data.get("timestamp")
+            
+            if len(nodes) == 0:
+                # If we have a recent timestamp but no nodes, cluster is still initializing
+                # If timestamp exists, it means scanner ran but found nothing (Kubernetes API not ready)
+                if timestamp:
+                    return {
+                        "status": "initializing",
+                        "message": "Kubernetes API is starting up. Waiting for nodes to become available...",
+                        "data": data
+                    }
+                else:
+                    # No timestamp means this is genuinely an empty result
+                    return {
+                        "status": "empty",
+                        "message": "Cluster appears to be empty (no resources found)",
+                        "data": data
+                    }
+            
             return {"status": "success", "data": data}
         else:
-            return {"status": "no_data", "message": "No graph data available yet"}
+            return {
+                "status": "waiting",
+                "message": "Waiting for initial scan to complete..."
+            }
     except Exception as e:
         return {"status": "error", "error": str(e)}
 

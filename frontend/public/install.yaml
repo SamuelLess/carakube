@@ -228,3 +228,61 @@ spec:
 #                 name: carakube-api
 #                 port:
 #                   number: 80
+
+---
+# Post-installation information job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: carakube-install-info
+  namespace: carakube-system
+  labels:
+    app: carakube
+    component: install-info
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: carakube
+        component: install-info
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: info
+          image: busybox:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo ""
+              echo "═══════════════════════════════════════════════════════════════════════════"
+              echo "                    CARAKUBE INSTALLATION COMPLETE"
+              echo "═══════════════════════════════════════════════════════════════════════════"
+              echo ""
+              echo "⚠️  DEMO NOTICE: This is a demonstration installation"
+              echo ""
+              echo "    This installer is currently designed for local development and"
+              echo "    testing purposes only. Carakube is intended to be deployed as"
+              echo "    a cloud-hosted service with:"
+              echo ""
+              echo "      • Managed infrastructure and updates"
+              echo "      • Centralized dashboard and analytics"
+              echo "      • Multi-cluster management"
+              echo "      • Enterprise support and SLA"
+              echo ""
+              echo "    🚧 NOT READY FOR PRODUCTION USE 🚧"
+              echo ""
+              echo "    For more information or to request early access to the hosted"
+              echo "    service, please visit: https://carakube.io"
+              echo ""
+              echo "═══════════════════════════════════════════════════════════════════════════"
+              echo ""
+              echo "To view the Carakube operator logs:"
+              echo "  kubectl logs -n carakube-system -l component=operator -f"
+              echo ""
+              echo "To access the API:"
+              echo "  kubectl port-forward -n carakube-system svc/carakube-api 8000:80"
+              echo ""
+              echo "═══════════════════════════════════════════════════════════════════════════"
+              sleep 5

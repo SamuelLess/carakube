@@ -118,8 +118,8 @@ const StatsSchema = z.object({
   }),
 });
 
-// 5. Main Response Schema
-export const ClusterDataSchema = z.object({
+// 5. Main Response Schema - Success case
+const ClusterDataSuccessSchema = z.object({
   status: z.literal("success"),
   data: z.object({
     timestamp: z.string(),
@@ -128,6 +128,53 @@ export const ClusterDataSchema = z.object({
     stats: StatsSchema,
   }),
 });
+
+// Response Schema - Waiting case (no data file yet)
+const ClusterDataWaitingSchema = z.object({
+  status: z.literal("waiting"),
+  message: z.string(),
+});
+
+// Response Schema - Initializing case (Kubernetes starting up)
+const ClusterDataInitializingSchema = z.object({
+  status: z.literal("initializing"),
+  message: z.string(),
+  data: z
+    .object({
+      timestamp: z.string(),
+      nodes: z.array(NodeSchema),
+      links: z.array(LinkSchema),
+      stats: StatsSchema,
+    })
+    .optional(),
+});
+
+// Response Schema - Empty case (no resources found)
+const ClusterDataEmptySchema = z.object({
+  status: z.literal("empty"),
+  message: z.string(),
+  data: z.object({
+    timestamp: z.string(),
+    nodes: z.array(NodeSchema),
+    links: z.array(LinkSchema),
+    stats: StatsSchema,
+  }),
+});
+
+// Response Schema - Error case
+const ClusterDataErrorSchema = z.object({
+  status: z.literal("error"),
+  error: z.string(),
+});
+
+// Union of all possible responses
+export const ClusterDataSchema = z.discriminatedUnion("status", [
+  ClusterDataSuccessSchema,
+  ClusterDataWaitingSchema,
+  ClusterDataInitializingSchema,
+  ClusterDataEmptySchema,
+  ClusterDataErrorSchema,
+]);
 
 // Export the inferred TypeScript type
 export type ClusterData = z.infer<typeof ClusterDataSchema>;
