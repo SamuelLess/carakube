@@ -131,7 +131,7 @@ const FlowingTreeGraph: React.FC = () => {
   const { nodes, edges, onNodesChange, onEdgesChange, setNodes, onConnect, updateLayoutCounter } =
     useGraphStore();
 
-  const { selectedNodeId, setSelectedNodeId } = useSelectedNode();
+  const { selectedNodeId, setSelectedNodeId, centerNodeId, setCenterNodeId } = useSelectedNode();
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [hidden, setHidden] = useState<boolean>(true);
 
@@ -199,6 +199,23 @@ const FlowingTreeGraph: React.FC = () => {
     setTimeout(() => setHidden(false), 1000);
     setTimeout(() => initialDelayedFormat(), 1000);
   }, []);
+
+  // Effect to center and focus on a node when centerNodeId changes
+  useEffect(() => {
+    if (centerNodeId && rfInstance) {
+      const node = nodes.find((n) => n.id === centerNodeId);
+      if (node) {
+        rfInstance.fitView({
+          nodes: [node],
+          duration: 800,
+          maxZoom: 1.5,
+          minZoom: 0.5,
+        });
+        // Clear the center request after processing
+        setCenterNodeId(null);
+      }
+    }
+  }, [centerNodeId, rfInstance, nodes, setCenterNodeId]);
 
   // Highlight edges connected to the selected node
   const highlightedEdges = useMemo(() => {

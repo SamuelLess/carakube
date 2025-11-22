@@ -4,6 +4,7 @@ import styles from "./IncidentReportCard.module.css";
 
 interface IncidentReportCardProps {
   incident: VulnerabilityWithId;
+  onClick?: (nodeId: string) => void;
 }
 
 const levelMapping = {
@@ -34,9 +35,15 @@ const levelMapping = {
   },
 };
 
-export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
+export const IncidentReportCard = ({ incident, onClick }: IncidentReportCardProps) => {
   const { severity, title } = incident;
   const { label, color, icon } = levelMapping[severity];
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(incident.id);
+    }
+  };
 
   // Category mapping for vulnerability types
   const getCategory = (type: string) => {
@@ -79,7 +86,11 @@ export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
   };
 
   return (
-    <div className={styles.card}>
+    <div
+      className={styles.card}
+      onClick={handleClick}
+      style={{ cursor: onClick ? "pointer" : "default" }}
+    >
       <span className={styles.icon}>{icon}</span>
       <div>
         <div className={styles.badges}>

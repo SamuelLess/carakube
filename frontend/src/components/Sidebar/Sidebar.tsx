@@ -18,12 +18,17 @@ import styles from "./Sidebar.module.css";
 export const Sidebar = () => {
   const { isOpen, toggle } = useSidebarStore();
   const { incidents } = useIncidentStore();
-  const { selectedNodeId, setSelectedNodeId } = useSelectedNode();
+  const { selectedNodeId, setSelectedNodeId, setCenterNodeId } = useSelectedNode();
 
   // Filter incidents based on selected node
   const filteredIncidents = selectedNodeId
     ? incidents.filter((i) => i.nodeId === selectedNodeId)
     : incidents;
+
+  const handleIncidentClick = (nodeId: string) => {
+    setSelectedNodeId(nodeId);
+    setCenterNodeId(nodeId);
+  };
 
   const criticals = filteredIncidents.filter((i) => i.severity === "critical");
   const highs = filteredIncidents.filter((i) => i.severity === "high");
@@ -146,7 +151,7 @@ export const Sidebar = () => {
           >
             <div className={styles.title}>Critical Vulnerabilities</div>
             {criticals.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} />
+              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
             ))}
           </div>
         ) : null}
@@ -157,7 +162,7 @@ export const Sidebar = () => {
           >
             <div className={styles.title}>High Vulnerabilities</div>
             {highs.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} />
+              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
             ))}
           </div>
         ) : null}
@@ -168,7 +173,7 @@ export const Sidebar = () => {
           >
             <div className={styles.title}>Medium Vulnerabilities</div>
             {mediums.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} />
+              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
             ))}
           </div>
         ) : null}
@@ -179,7 +184,7 @@ export const Sidebar = () => {
           >
             <div className={styles.title}>Low Vulnerabilities</div>
             {low.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} />
+              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
             ))}
           </div>
         ) : null}
@@ -190,7 +195,7 @@ export const Sidebar = () => {
           >
             <div className={styles.title}>Information</div>
             {info.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} />
+              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
             ))}
           </div>
         ) : null}

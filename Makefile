@@ -66,9 +66,9 @@ check-deps-backend: ## Check if backend dependencies are installed
 
 dev: dev-full ## Start full development stack (alias for dev-full)
 
-dev-frontend: check-deps-frontend ## Start frontend development server (pnpm)
-	@echo "$(CYAN)Starting frontend dev server (pnpm)...$(NC)"
-	cd frontend && pnpm dev
+dev-frontend: check-deps-frontend ## Start frontend development server on port 3001 (pnpm)
+	@echo "$(CYAN)Starting frontend dev server on port 3001 (pnpm)...$(NC)"
+	cd frontend && API_URL=http://localhost:8000/api/graph pnpm dev -p 3001
 
 dev-backend: ## Start backend development server (uv)
 	@echo "$(CYAN)Starting backend dev server (uv)...$(NC)"

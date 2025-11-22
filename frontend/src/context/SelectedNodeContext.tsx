@@ -5,15 +5,20 @@ import React, { type ReactNode, createContext, useContext, useState } from "reac
 interface SelectedNodeContextType {
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
+  centerNodeId: string | null;
+  setCenterNodeId: (id: string | null) => void;
 }
 
 const SelectedNodeContext = createContext<SelectedNodeContextType | undefined>(undefined);
 
 export const SelectedNodeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [centerNodeId, setCenterNodeId] = useState<string | null>(null);
 
   return (
-    <SelectedNodeContext.Provider value={{ selectedNodeId, setSelectedNodeId }}>
+    <SelectedNodeContext.Provider
+      value={{ selectedNodeId, setSelectedNodeId, centerNodeId, setCenterNodeId }}
+    >
       {children}
     </SelectedNodeContext.Provider>
   );
