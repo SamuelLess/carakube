@@ -14,7 +14,6 @@ class ClusterScanner:
     def __init__(self, output_dir: str = "/app/scanner_output"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.output_file = self.output_dir / "cluster_status.json"
         self.graph_file = self.output_dir / "cluster_graph.json"
         self._init_k8s_clients()
     
@@ -273,11 +272,11 @@ class ClusterScanner:
         }
         return scan_result
     
-    def scan_topology(self) -> Dict[str, Any]:
-        """Scan cluster topology and build graph"""
+    def scan_topology(self, scan_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        """Scan cluster topology and build graph with vulnerability data"""
         try:
             from .graph_builder import ClusterGraphBuilder
-            builder = ClusterGraphBuilder(self)
+            builder = ClusterGraphBuilder(self, scan_data)
             graph = builder.build_graph()
             return graph
         except Exception as e:
@@ -288,17 +287,6 @@ class ClusterScanner:
                 "links": [],
                 "error": str(e)
             }
-    
-    def save_scan(self, scan_data: dict) -> bool:
-        """Save scan result to JSON file"""
-        try:
-            with open(self.output_file, "w") as f:
-                json.dump(scan_data, f, indent=2)
-            print(f"✅ Scan saved to {self.output_file} 💾", flush=True)
-            return True
-        except Exception as e:
-            print(f"❌ Error saving scan: {e} 🚨", flush=True)
-            return False
     
     def save_graph(self, graph_data: dict) -> bool:
         """Save graph result to JSON file"""
@@ -312,12 +300,12 @@ class ClusterScanner:
             return False
     
     def run_and_save(self) -> dict:
-        """Run scan and save result"""
+        """Run scan and save graph with integrated vulnerability data"""
+        # Run vulnerability scans
         scan_data = self.scan()
-        self.save_scan(scan_data)
         
-        # Also run topology scan
-        graph_data = self.scan_topology()
+        # Build topology graph with vulnerability data integrated
+        graph_data = self.scan_topology(scan_data)
         self.save_graph(graph_data)
         
-        return scan_data
+        return graph_data

@@ -4,7 +4,6 @@ import uvicorn
 from pathlib import Path
 
 app = FastAPI(title="Carakube Operator API")
-SCANNER_OUTPUT_FILE = Path("/app/scanner_output/cluster_status.json")
 GRAPH_OUTPUT_FILE = Path("/app/scanner_output/cluster_graph.json")
 
 @app.get("/health")
@@ -21,19 +20,6 @@ async def test_endpoint():
         "timestamp": time.time(),
         "operator": "carakube-operator"
     }
-
-@app.get("/cluster/status")
-async def cluster_status():
-    """Get current cluster status from last scan"""
-    try:
-        if SCANNER_OUTPUT_FILE.exists():
-            with open(SCANNER_OUTPUT_FILE, "r") as f:
-                data = json.load(f)
-            return {"status": "success", "data": data}
-        else:
-            return {"status": "no_data", "message": "No scan data available yet"}
-    except Exception as e:
-        return {"status": "error", "error": str(e)}
 
 @app.get("/api/graph")
 async def get_graph():

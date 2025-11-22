@@ -16,8 +16,9 @@ from .cluster_scanner import ClusterScanner
 class ClusterGraphBuilder:
     """Builds a simplified graph representation of Kubernetes cluster topology."""
 
-    def __init__(self, scanner: ClusterScanner):
+    def __init__(self, scanner: ClusterScanner, scan_data: Optional[Dict[str, Any]] = None):
         self.scanner = scanner
+        self.scan_data = scan_data or {}
         self.nodes: List[Dict[str, Any]] = []
         self.links: List[Dict[str, Any]] = []
 
@@ -26,12 +27,14 @@ class ClusterGraphBuilder:
         try:
             namespaces = self.scanner.v1_api.list_namespace()
             for ns in namespaces.items:
-                self.nodes.append({
+                namespace_node = {
                     "id": f"ns-{ns.metadata.name}",
                     "label": ns.metadata.name,
                     "type": "namespace",
                     "status": ns.status.phase,
-                })
+                    "vulnerabilities": self._get_namespace_vulnerabilities(ns.metadata.name)
+                }
+                self.nodes.append(namespace_node)
         except Exception as e:
             print(f"❌ Error adding namespace nodes: {e}")
 
@@ -56,13 +59,15 @@ class ClusterGraphBuilder:
             pods = self.scanner.v1_api.list_pod_for_all_namespaces()
             for pod in pods.items:
                 pod_status = pod.status.phase.lower() if pod.status.phase else "unknown"
-                self.nodes.append({
+                pod_node = {
                     "id": f"pod-{pod.metadata.namespace}-{pod.metadata.name}",
                     "label": pod.metadata.name,
                     "type": "pod",
                     "namespace": pod.metadata.namespace,
                     "status": pod_status,
-                })
+                    "vulnerabilities": self._get_pod_vulnerabilities(pod)
+                }
+                self.nodes.append(pod_node)
         except Exception as e:
             print(f"❌ Error adding pod nodes: {e}")
 
@@ -71,13 +76,15 @@ class ClusterGraphBuilder:
         try:
             services = self.scanner.v1_api.list_service_for_all_namespaces()
             for svc in services.items:
-                self.nodes.append({
+                service_node = {
                     "id": f"svc-{svc.metadata.namespace}-{svc.metadata.name}",
                     "label": svc.metadata.name,
                     "type": "service",
                     "namespace": svc.metadata.namespace,
                     "status": svc.spec.type,
-                })
+                    "vulnerabilities": self._get_service_vulnerabilities(svc)
+                }
+                self.nodes.append(service_node)
         except Exception as e:
             print(f"❌ Error adding service nodes: {e}")
 
@@ -174,6 +181,107 @@ class ClusterGraphBuilder:
 
         print(f"✅ Graph built: {graph['stats']['total_nodes']} nodes, {graph['stats']['total_links']} links")
         return graph
+
+    def _get_pod_vulnerabilities(self, pod: Any) -> List[Dict[str, Any]]:
+        """Extract vulnerabilities relevant to a specific pod."""
+        vulnerabilities = []
+        scans = self.scan_data.get("scans", {})
+        
+        # Check workload vulnerabilities (env vars)
+        workloads = scans.get("workloads", {}).get("findings", [])
+        for workload in workloads:
+            if (workload.get("namespace") == pod.metadata.namespace and 
+                any(pod.metadata.name.startswith(workload.get("name", "")) for _ in [1])):
+                for container in workload.get("containers", []):
+                    if container.get("env_vars"):
+                        vulnerabilities.append({
+                            "type": "workload",
+                            "severity": "medium",
+                            "title": f"Environment variables in deployment",
+                            "container": container.get("name"),
+                            "env_vars": container.get("env_vars")
+                        })
+        
+        # Check image vulnerabilities
+        images = scans.get("images", {}).get("findings", [])
+        for image_finding in images:
+            if (image_finding.get("namespace") == pod.metadata.namespace and 
+                image_finding.get("name") == pod.metadata.name):
+                for img in image_finding.get("images", []):
+                    vulnerabilities.append({
+                        "type": "image",
+                        "severity": "info",
+                        "title": f"Container image: {img.get('image')}",
+                        "image": img.get("image"),
+                        "pull_policy": img.get("image_pull_policy")
+                    })
+        
+        return vulnerabilities
+    
+    def _get_namespace_vulnerabilities(self, namespace: str) -> List[Dict[str, Any]]:
+        """Extract vulnerabilities relevant to a specific namespace."""
+        vulnerabilities = []
+        scans = self.scan_data.get("scans", {})
+        
+        # Check secrets
+        secrets = scans.get("secrets", {}).get("findings", [])
+        for secret in secrets:
+            if secret.get("namespace") == namespace:
+                vulnerabilities.append({
+                    "type": "secret",
+                    "severity": "high",
+                    "title": f"Secret: {secret.get('name')}",
+                    "secret_type": secret.get("type"),
+                    "keys": secret.get("keys", [])
+                })
+        
+        # Check misconfigs
+        misconfigs = scans.get("misconfigs", {}).get("findings", [])
+        for config in misconfigs:
+            if config.get("namespace") == namespace:
+                vulnerabilities.append({
+                    "type": "misconfig",
+                    "severity": "medium",
+                    "title": f"ConfigMap: {config.get('name')}",
+                    "data_keys": list(config.get("data", {}).keys())
+                })
+        
+        # Check privileges
+        privileges = scans.get("privileges", {}).get("findings", [])
+        for priv in privileges:
+            if priv.get("namespace") == namespace:
+                vulnerabilities.append({
+                    "type": "privilege",
+                    "severity": "critical",
+                    "title": f"Dangerous ClusterRole: {priv.get('name')}",
+                    "dangerous_rules": priv.get("dangerous_rules", [])
+                })
+        
+        return vulnerabilities
+    
+    def _get_service_vulnerabilities(self, service: Any) -> List[Dict[str, Any]]:
+        """Extract vulnerabilities relevant to a specific service."""
+        vulnerabilities = []
+        scans = self.scan_data.get("scans", {})
+        
+        # Check exposure (ingress)
+        exposures = scans.get("exposure", {}).get("findings", [])
+        for exposure in exposures:
+            if exposure.get("namespace") == service.metadata.namespace:
+                # Check if this ingress exposes this service
+                for rule in exposure.get("rules", []):
+                    for path in rule.get("paths", []):
+                        if path.get("service_name") == service.metadata.name:
+                            vulnerabilities.append({
+                                "type": "exposure",
+                                "severity": "high",
+                                "title": f"Exposed via Ingress: {exposure.get('name')}",
+                                "host": rule.get("host"),
+                                "path": path.get("path"),
+                                "has_tls": len(exposure.get("tls", [])) > 0
+                            })
+        
+        return vulnerabilities
 
     @staticmethod
     def _is_node_ready(node: client.V1Node) -> bool:
