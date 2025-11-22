@@ -25,69 +25,87 @@ def create_test_file(repo_dir: Path) -> None:
     test_file.write_text("TEST")
 
 
-def commit_and_push_changes(repo_dir: Path, branch_name: str) -> None:
+def commit_and_push_changes(repo_dir: Path, branch_name: str, commit_message: str = "Add test file") -> None:
     """
     Commit changes and push to a new branch.
     
     Args:
         repo_dir: Path to the repository directory
         branch_name: Name of the new branch
+        commit_message: Commit message (default: "Add test file")
     """
-    # Configure git user
-    subprocess.run(
-        ["git", "config", "user.name", "Carakube Bot"],
-        cwd=repo_dir,
-        check=True,
-        capture_output=True
-    )
-    subprocess.run(
-        ["git", "config", "user.email", "bot@carakube.local"],
-        cwd=repo_dir,
-        check=True,
-        capture_output=True
-    )
-    
-    # Create and checkout new branch
-    subprocess.run(
-        ["git", "checkout", "-b", branch_name],
-        cwd=repo_dir,
-        check=True,
-        capture_output=True
-    )
-    
-    # Add the test file
-    subprocess.run(
-        ["git", "add", "test.txt"],
-        cwd=repo_dir,
-        check=True,
-        capture_output=True
-    )
-    
-    # Commit the changes
-    subprocess.run(
-        ["git", "commit", "-m", "Add test file"],
-        cwd=repo_dir,
-        check=True,
-        capture_output=True
-    )
-    
-    # Push to remote with authentication
-    remote_url = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}.git"
-    subprocess.run(
-        ["git", "push", remote_url, branch_name],
-        cwd=repo_dir,
-        check=True,
-        capture_output=True
-    )
+    try:
+        # Configure git user
+        subprocess.run(
+            ["git", "config", "user.name", "Carakube Bot"],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        subprocess.run(
+            ["git", "config", "user.email", "bot@carakube.local"],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        
+        # Create and checkout new branch
+        subprocess.run(
+            ["git", "checkout", "-b", branch_name],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        
+        # Add all changes
+        subprocess.run(
+            ["git", "add", "-A"],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        
+        # Commit the changes
+        subprocess.run(
+            ["git", "commit", "-m", commit_message],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        
+        # Push to remote with authentication
+        remote_url = f"https://{GITHUB_TOKEN}@github.com/{GITHUB_REPO_OWNER}/{GITHUB_REPO_NAME}.git"
+        subprocess.run(
+            ["git", "push", remote_url, branch_name],
+            cwd=repo_dir,
+            check=True,
+            capture_output=True,
+            text=True
+        )
+    except subprocess.CalledProcessError as e:
+        error_msg = f"Git command failed:\nCommand: {' '.join(e.cmd)}\nReturn code: {e.returncode}\nStdout: {e.stdout}\nStderr: {e.stderr}"
+        raise RuntimeError(error_msg) from e
 
 
-def create_pull_request(branch_name: str, base_branch: str = "main") -> Dict[str, Any]:
+def create_pull_request(
+    branch_name: str, 
+    base_branch: str = "main",
+    title: str = "Auto-fix: Add test file",
+    body: str = "Automatically generated test file by Carakube auto-fix system."
+) -> Dict[str, Any]:
     """
     Create a pull request on GitHub.
     
     Args:
         branch_name: Name of the branch to create PR from
         base_branch: Name of the base branch (default: main)
+        title: PR title (default: "Auto-fix: Add test file")
+        body: PR body/description (default: auto-fix message)
         
     Returns:
         API response from GitHub
@@ -98,8 +116,8 @@ def create_pull_request(branch_name: str, base_branch: str = "main") -> Dict[str
         "Accept": "application/vnd.github.v3+json"
     }
     data = {
-        "title": f"Auto-fix: Add test file",
-        "body": "Automatically generated test file by Carakube auto-fix system.",
+        "title": title,
+        "body": body,
         "head": branch_name,
         "base": base_branch
     }
