@@ -26,6 +26,7 @@ providers:
   docker:
     exposedByDefault: false # Only expose containers with a specific label.
     watch: true
+    network: traefik-proxy
 
 # Define the certificate resolver for Let's Encrypt.
 certificatesResolvers:
