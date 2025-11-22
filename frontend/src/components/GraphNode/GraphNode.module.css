@@ -44,3 +44,14 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
+
+.nodeType {
+  position: absolute;
+  top: -18px;
+  left: 1;
+  font-size: 0.7rem;
+  color: #666;
+  font-weight: 450;
+  text-transform: lowercase;
+  pointer-events: none;
+}

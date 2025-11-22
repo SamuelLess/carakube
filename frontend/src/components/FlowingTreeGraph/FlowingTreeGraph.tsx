@@ -30,11 +30,13 @@ const getLayoutedElements = async (
     children: nodes.map((node) => {
       const actualWidth = node.width || 180;
       const actualHeight = node.height || 60;
+      // Add extra space for the node type label positioned above the node
+      const labelSpacing = 5;
 
       return {
         ...node,
         width: actualWidth,
-        height: actualHeight,
+        height: actualHeight + labelSpacing,
       };
     }),
     edges: edges.map((edge) => ({

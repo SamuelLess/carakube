@@ -26,6 +26,7 @@ const GraphNode: React.FC<NodeProps<NodeData>> = ({ data, id }) => {
       style={{ border: data.apiType ? typeToColor[data.apiType] : "inherit" }}
       onClick={handleClick}
     >
+      {data.apiType && <span className={styles.nodeType}>{data.apiType}</span>}
       {data.label}
       {data.vulnerabilityCount && data.vulnerabilityCount > 1 && (
         <span className={styles.vulnerabilityBadge}>{data.vulnerabilityCount}</span>
