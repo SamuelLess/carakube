@@ -72,8 +72,8 @@ services:
       - kubeconfig-data:/kubeconfig:ro
     environment:
       - KUBECONFIG=/kubeconfig/config
-      - ACCESS_TOKEN=${ACCESS_TOKEN}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ACCESS_TOKEN=${ACCESS_TOKEN:-access_token_not_set}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-gemini_api_key_not_set}
       - REPO_OWNER=${REPO_OWNER:-SamuelLess}
       - REPO_NAME=${REPO_NAME:-hackatum-k8s-flux}
     networks:
