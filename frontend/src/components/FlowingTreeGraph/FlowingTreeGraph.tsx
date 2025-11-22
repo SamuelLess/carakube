@@ -31,7 +31,7 @@ const calculateNodeWidth = (label: string): number => {
     // Fallback: estimate based on character count
     const avgCharWidth = 9; // approximate for IBM Plex Sans
     const estimatedTextWidth = label.length * avgCharWidth;
-    const padding = 32; // 1rem on each side = 16px * 2
+    const padding = 64; // 2rem on each side = 32px * 2
     const minWidth = 100;
     const maxWidth = 250;
     return Math.min(Math.max(estimatedTextWidth + padding, minWidth), maxWidth);
@@ -43,8 +43,8 @@ const calculateNodeWidth = (label: string): number => {
   const textMetrics = context.measureText(label);
   const textWidth = textMetrics.width;
 
-  // Add padding (1rem = 16px on each side) + small buffer for border
-  const padding = 32; // 16px * 2
+  // Add padding (2rem = 32px on each side) + small buffer for border
+  const padding = 64; // 32px * 2
   const border = 4; // border width
   const buffer = 10; // extra buffer for safety
   const totalWidth = textWidth + padding + border + buffer;
@@ -149,7 +149,7 @@ const FlowingTreeGraph: React.FC = () => {
         "elk.spacing.nodeNode": "80",
 
         // Space between layers (levels)
-        "elk.layered.spacing.layerNodeBetweenLayers": "200",
+        "elk.layered.spacing.layerNodeBetweenLayers": "150",
 
         // Additional spacing between nodes in the same layer
         "elk.layered.spacing.nodeNodeBetweenLayers": "80",
@@ -196,8 +196,8 @@ const FlowingTreeGraph: React.FC = () => {
   });
 
   useEffect(() => {
-    setTimeout(() => setHidden(false), 500);
-    setTimeout(() => initialDelayedFormat(), 500);
+    setTimeout(() => setHidden(false), 1000);
+    setTimeout(() => initialDelayedFormat(), 1000);
   }, []);
 
   return (
@@ -213,7 +213,7 @@ const FlowingTreeGraph: React.FC = () => {
             style={{ zIndex: 999 }}
           >
             <Box height={"2px"} width={"300px"}>
-              <Progress duration=".5s" />
+              <Progress duration="1s" />
             </Box>
           </Flex>
         </Theme>
