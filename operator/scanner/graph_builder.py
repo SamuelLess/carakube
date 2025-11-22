@@ -188,34 +188,70 @@ class ClusterGraphBuilder:
         vulnerabilities = []
         scans = self.scan_data.get("scans", {})
         
-        # Check workload vulnerabilities (env vars)
-        workloads = scans.get("workloads", {}).get("findings", [])
-        for workload in workloads:
-            if (workload.get("namespace") == pod.metadata.namespace and 
-                any(pod.metadata.name.startswith(workload.get("name", "")) for _ in [1])):
-                for container in workload.get("containers", []):
-                    if container.get("env_vars"):
+        # Check container security vulnerabilities
+        container_security = scans.get("container_security", {}).get("findings", [])
+        for finding in container_security:
+            if (finding.get("namespace") == pod.metadata.namespace and 
+                finding.get("pod_name") == pod.metadata.name):
+                # Add pod-level vulnerabilities
+                for issue in finding.get("pod_level", []):
+                    vulnerabilities.append({
+                        "type": issue.get("type"),
+                        "severity": issue.get("severity"),
+                        "title": issue.get("description"),
+                        "details": issue
+                    })
+                # Add container-level vulnerabilities
+                for container in finding.get("containers", []):
+                    for vuln in container.get("vulnerabilities", []):
                         vulnerabilities.append({
-                            "type": "workload",
-                            "severity": "medium",
-                            "title": "Environment variables in deployment",
-                            "container": container.get("name"),
-                            "env_vars": container.get("env_vars")
+                            "type": vuln.get("type"),
+                            "severity": vuln.get("severity"),
+                            "title": vuln.get("description"),
+                            "container": container.get("container_name")
                         })
         
-        # Check image vulnerabilities
-        images = scans.get("images", {}).get("findings", [])
-        for image_finding in images:
-            if (image_finding.get("namespace") == pod.metadata.namespace and 
-                image_finding.get("name") == pod.metadata.name):
-                for img in image_finding.get("images", []):
+        # Check resource limits
+        resource_limits = scans.get("resource_limits", {}).get("findings", [])
+        for finding in resource_limits:
+            if (finding.get("namespace") == pod.metadata.namespace and 
+                finding.get("pod_name") == pod.metadata.name):
+                for container in finding.get("containers", []):
                     vulnerabilities.append({
-                        "type": "image",
-                        "severity": "info",
-                        "title": f"Container image: {img.get('image')}",
-                        "image": img.get("image"),
-                        "pull_policy": img.get("image_pull_policy")
+                        "type": "missing_resource_limits",
+                        "severity": container.get("severity"),
+                        "title": container.get("description"),
+                        "container": container.get("container_name"),
+                        "missing_limits": container.get("missing_limits")
                     })
+        
+        # Check ServiceAccount security
+        sa_security = scans.get("serviceaccount_security", {}).get("findings", [])
+        for finding in sa_security:
+            if (finding.get("namespace") == pod.metadata.namespace and 
+                finding.get("pod_name") == pod.metadata.name):
+                for issue in finding.get("issues", []):
+                    vulnerabilities.append({
+                        "type": issue.get("type"),
+                        "severity": issue.get("severity"),
+                        "title": issue.get("description"),
+                        "service_account": finding.get("service_account")
+                    })
+        
+        # Check image security
+        image_security = scans.get("image_security", {}).get("findings", [])
+        for finding in image_security:
+            if (finding.get("namespace") == pod.metadata.namespace and 
+                finding.get("pod_name") == pod.metadata.name):
+                for container in finding.get("containers", []):
+                    for issue in container.get("issues", []):
+                        vulnerabilities.append({
+                            "type": issue.get("type"),
+                            "severity": issue.get("severity"),
+                            "title": issue.get("description"),
+                            "container": container.get("container_name"),
+                            "image": container.get("image")
+                        })
         
         return vulnerabilities
     
@@ -224,38 +260,30 @@ class ClusterGraphBuilder:
         vulnerabilities = []
         scans = self.scan_data.get("scans", {})
         
-        # Check secrets
-        secrets = scans.get("secrets", {}).get("findings", [])
-        for secret in secrets:
-            if secret.get("namespace") == namespace:
-                vulnerabilities.append({
-                    "type": "secret",
-                    "severity": "high",
-                    "title": f"Secret: {secret.get('name')}",
-                    "secret_type": secret.get("type"),
-                    "keys": secret.get("keys", [])
-                })
+        # Check network exposure issues for this namespace
+        network_exposure = scans.get("network_exposure", {}).get("findings", [])
+        for finding in network_exposure:
+            if finding.get("namespace") == namespace:
+                # Check if it's a namespace without NetworkPolicy
+                if finding.get("type") == "namespace_without_netpol":
+                    for issue in finding.get("issues", []):
+                        vulnerabilities.append({
+                            "type": issue.get("type"),
+                            "severity": issue.get("severity"),
+                            "title": issue.get("description")
+                        })
         
-        # Check misconfigs
-        misconfigs = scans.get("misconfigs", {}).get("findings", [])
-        for config in misconfigs:
-            if config.get("namespace") == namespace:
+        # Check RBAC wildcards (ClusterRoles can affect any namespace)
+        rbac_wildcards = scans.get("rbac_wildcards", {}).get("findings", [])
+        for finding in rbac_wildcards:
+            # ClusterRoles are cluster-wide but we show them in each namespace
+            for rule in finding.get("dangerous_rules", []):
                 vulnerabilities.append({
-                    "type": "misconfig",
-                    "severity": "medium",
-                    "title": f"ConfigMap: {config.get('name')}",
-                    "data_keys": list(config.get("data", {}).keys())
-                })
-        
-        # Check privileges
-        privileges = scans.get("privileges", {}).get("findings", [])
-        for priv in privileges:
-            if priv.get("namespace") == namespace:
-                vulnerabilities.append({
-                    "type": "privilege",
-                    "severity": "critical",
-                    "title": f"Dangerous ClusterRole: {priv.get('name')}",
-                    "dangerous_rules": priv.get("dangerous_rules", [])
+                    "type": "rbac_wildcard",
+                    "severity": rule.get("severity"),
+                    "title": f"Dangerous ClusterRole: {finding.get('role_name')}",
+                    "description": rule.get("description"),
+                    "role_name": finding.get("role_name")
                 })
         
         return vulnerabilities
@@ -265,22 +293,19 @@ class ClusterGraphBuilder:
         vulnerabilities = []
         scans = self.scan_data.get("scans", {})
         
-        # Check exposure (ingress)
-        exposures = scans.get("exposure", {}).get("findings", [])
-        for exposure in exposures:
-            if exposure.get("namespace") == service.metadata.namespace:
-                # Check if this ingress exposes this service
-                for rule in exposure.get("rules", []):
-                    for path in rule.get("paths", []):
-                        if path.get("service_name") == service.metadata.name:
-                            vulnerabilities.append({
-                                "type": "exposure",
-                                "severity": "high",
-                                "title": f"Exposed via Ingress: {exposure.get('name')}",
-                                "host": rule.get("host"),
-                                "path": path.get("path"),
-                                "has_tls": len(exposure.get("tls", [])) > 0
-                            })
+        # Check network exposure (NodePort, LoadBalancer)
+        network_exposure = scans.get("network_exposure", {}).get("findings", [])
+        for finding in network_exposure:
+            if (finding.get("namespace") == service.metadata.namespace and 
+                finding.get("service_name") == service.metadata.name):
+                for issue in finding.get("issues", []):
+                    vulnerabilities.append({
+                        "type": issue.get("type"),
+                        "severity": issue.get("severity"),
+                        "title": issue.get("description"),
+                        "service_type": finding.get("type"),
+                        "details": issue
+                    })
         
         return vulnerabilities
 

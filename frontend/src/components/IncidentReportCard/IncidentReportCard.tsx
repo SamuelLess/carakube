@@ -38,6 +38,46 @@ export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
   const { severity, title } = incident;
   const { label, color, icon } = levelMapping[severity];
 
+  // Category mapping for vulnerability types
+  const getCategory = (type: string) => {
+    if (
+      [
+        "privileged_container",
+        "running_as_root",
+        "dangerous_capabilities",
+        "host_network",
+        "host_pid",
+        "host_ipc",
+        "host_path_mount",
+      ].includes(type)
+    ) {
+      return "Container Security";
+    }
+    if (type === "missing_resource_limits") {
+      return "Resource Limits";
+    }
+    if (["automounted_sa_token", "default_serviceaccount"].includes(type)) {
+      return "ServiceAccount";
+    }
+    if (
+      [
+        "nodeport_service",
+        "unrestricted_loadbalancer",
+        "loadbalancer_service",
+        "no_network_policy",
+      ].includes(type)
+    ) {
+      return "Network Exposure";
+    }
+    if (type === "rbac_wildcard") {
+      return "RBAC";
+    }
+    if (["mutable_image_tag", "untrusted_registry"].includes(type)) {
+      return "Image Security";
+    }
+    return "Security";
+  };
+
   return (
     <div className={styles.card}>
       <span className={styles.icon}>{icon}</span>
@@ -46,50 +86,28 @@ export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
           <span className={styles.badge} style={{ backgroundColor: color }}>
             {label}
           </span>
-          {incident.type === "image" && (
-            <>
-              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
-                Image
-              </div>
-              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
-                Image: {incident.image}
-              </div>
-              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
-                Pull Policy: {incident.pull_policy}
-              </div>
-            </>
+          <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
+            {getCategory(incident.type)}
+          </div>
+          {"container" in incident && incident.container && (
+            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+              Container: {incident.container}
+            </div>
           )}
-          {incident.type === "misconfig" && (
-            <>
-              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
-                Misconfiguration
-              </div>
-            </>
+          {"image" in incident && incident.image && (
+            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+              Image: {incident.image}
+            </div>
           )}
-          {incident.type === "secret" && (
-            <>
-              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
-                Secrets
-              </div>
-              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
-                {incident.secret_type}
-              </div>
-              {incident.keys.map((k, i) => {
-                <div key={i} className={styles.badge} style={{ background: "var(--carakube-10)" }}>
-                  KEY: {k}
-                </div>;
-              })}
-            </>
+          {"service_account" in incident && incident.service_account && (
+            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+              SA: {incident.service_account}
+            </div>
           )}
-          {incident.type === "workload" && (
-            <>
-              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
-                Workload
-              </div>
-              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
-                Container: {incident.container}
-              </div>
-            </>
+          {"role_name" in incident && incident.role_name && (
+            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+              Role: {incident.role_name}
+            </div>
           )}
         </div>
 

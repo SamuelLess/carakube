@@ -8,48 +8,156 @@ const severitySchema = z.union([
   z.literal("critical"),
 ]);
 
-const envVarSchema = z.object({
-  name: z.string(),
-  value: z.string().nullable(),
-  value_from: z.any(),
-});
-
-const misconfigVulnerabilitySchema = z.object({
-  type: z.literal("misconfig"),
+// Container Security vulnerabilities
+const privilegedContainerSchema = z.object({
+  type: z.literal("privileged_container"),
   severity: severitySchema,
   title: z.string(),
-  data_keys: z.array(z.string()),
+  container: z.string().optional(),
+  details: z.any().optional(),
 });
 
-const secretVulnerabilitySchema = z.object({
-  type: z.literal("secret"),
+const runningAsRootSchema = z.object({
+  type: z.literal("running_as_root"),
   severity: severitySchema,
   title: z.string(),
-  secret_type: z.string(),
-  keys: z.array(z.string()),
+  container: z.string().optional(),
 });
 
-const imageVulnerabilitySchema = z.object({
-  type: z.literal("image"),
+const dangerousCapabilitiesSchema = z.object({
+  type: z.literal("dangerous_capabilities"),
   severity: severitySchema,
   title: z.string(),
-  image: z.string(),
-  pull_policy: z.string(),
+  container: z.string().optional(),
 });
 
-const workloadVulnerabilitySchema = z.object({
-  type: z.literal("workload"),
+const hostNetworkSchema = z.object({
+  type: z.literal("host_network"),
   severity: severitySchema,
   title: z.string(),
-  container: z.string(),
-  env_vars: z.array(envVarSchema),
+  details: z.any().optional(),
+});
+
+const hostPidSchema = z.object({
+  type: z.literal("host_pid"),
+  severity: severitySchema,
+  title: z.string(),
+  details: z.any().optional(),
+});
+
+const hostIpcSchema = z.object({
+  type: z.literal("host_ipc"),
+  severity: severitySchema,
+  title: z.string(),
+  details: z.any().optional(),
+});
+
+const hostPathMountSchema = z.object({
+  type: z.literal("host_path_mount"),
+  severity: severitySchema,
+  title: z.string(),
+  details: z.any().optional(),
+});
+
+// Resource Limits vulnerabilities
+const missingResourceLimitsSchema = z.object({
+  type: z.literal("missing_resource_limits"),
+  severity: severitySchema,
+  title: z.string(),
+  container: z.string().optional(),
+  missing_limits: z.array(z.string()).optional(),
+});
+
+// ServiceAccount vulnerabilities
+const automountedSaTokenSchema = z.object({
+  type: z.literal("automounted_sa_token"),
+  severity: severitySchema,
+  title: z.string(),
+  service_account: z.string().optional(),
+});
+
+const defaultServiceAccountSchema = z.object({
+  type: z.literal("default_serviceaccount"),
+  severity: severitySchema,
+  title: z.string(),
+  service_account: z.string().optional(),
+});
+
+// Network Exposure vulnerabilities
+const nodeportServiceSchema = z.object({
+  type: z.literal("nodeport_service"),
+  severity: severitySchema,
+  title: z.string(),
+  service_type: z.string().optional(),
+  details: z.any().optional(),
+});
+
+const unrestrictedLoadbalancerSchema = z.object({
+  type: z.literal("unrestricted_loadbalancer"),
+  severity: severitySchema,
+  title: z.string(),
+  service_type: z.string().optional(),
+  details: z.any().optional(),
+});
+
+const loadbalancerServiceSchema = z.object({
+  type: z.literal("loadbalancer_service"),
+  severity: severitySchema,
+  title: z.string(),
+  service_type: z.string().optional(),
+  details: z.any().optional(),
+});
+
+const noNetworkPolicySchema = z.object({
+  type: z.literal("no_network_policy"),
+  severity: severitySchema,
+  title: z.string(),
+});
+
+// RBAC vulnerabilities
+const rbacWildcardSchema = z.object({
+  type: z.literal("rbac_wildcard"),
+  severity: severitySchema,
+  title: z.string(),
+  description: z.string().optional(),
+  role_name: z.string().optional(),
+});
+
+// Image Security vulnerabilities
+const mutableImageTagSchema = z.object({
+  type: z.literal("mutable_image_tag"),
+  severity: severitySchema,
+  title: z.string(),
+  container: z.string().optional(),
+  image: z.string().optional(),
+});
+
+const untrustedRegistrySchema = z.object({
+  type: z.literal("untrusted_registry"),
+  severity: severitySchema,
+  title: z.string(),
+  container: z.string().optional(),
+  image: z.string().optional(),
 });
 
 const vulnerabilitySchema = z.discriminatedUnion("type", [
-  misconfigVulnerabilitySchema,
-  secretVulnerabilitySchema,
-  imageVulnerabilitySchema,
-  workloadVulnerabilitySchema,
+  privilegedContainerSchema,
+  runningAsRootSchema,
+  dangerousCapabilitiesSchema,
+  hostNetworkSchema,
+  hostPidSchema,
+  hostIpcSchema,
+  hostPathMountSchema,
+  missingResourceLimitsSchema,
+  automountedSaTokenSchema,
+  defaultServiceAccountSchema,
+  nodeportServiceSchema,
+  unrestrictedLoadbalancerSchema,
+  loadbalancerServiceSchema,
+  noNetworkPolicySchema,
+  rbacWildcardSchema,
+  mutableImageTagSchema,
+  untrustedRegistrySchema,
 ]);
 
 export type Vulnerability = z.infer<typeof vulnerabilitySchema>;

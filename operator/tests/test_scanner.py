@@ -27,33 +27,45 @@ class TestClusterScanner:
             assert scanner.output_dir.exists()
             assert scanner.graph_file.name == "cluster_graph.json"
 
-    def test_scan_secrets_structure(self):
-        """Test that scan_secrets returns correct structure"""
+    def test_scan_container_security_structure(self):
+        """Test that scan_container_security returns correct structure"""
         from scanner.cluster_scanner import ClusterScanner
 
         with patch("scanner.cluster_scanner.config"):
             scanner = ClusterScanner(output_dir="/tmp/test_output")
 
-            # Mock the v1_api
-            mock_secret = Mock()
-            mock_secret.metadata.namespace = "default"
-            mock_secret.metadata.name = "test-secret"
-            mock_secret.type = "Opaque"
-            mock_secret.data = {"password": "c3VwM3JzM2NyM3Q="}  # base64 encoded
+            # Mock the v1_api with a privileged pod
+            mock_container = Mock()
+            mock_container.name = "test-container"
+            mock_container.image = "nginx:latest"
+            mock_container.security_context = Mock()
+            mock_container.security_context.privileged = True
+            mock_container.security_context.run_as_user = None
+            mock_container.security_context.run_as_non_root = None
+            mock_container.security_context.capabilities = None
 
-            mock_secrets = Mock()
-            mock_secrets.items = [mock_secret]
-            scanner.v1_api.list_secret_for_all_namespaces = Mock(
-                return_value=mock_secrets
+            mock_pod = Mock()
+            mock_pod.metadata.namespace = "default"
+            mock_pod.metadata.name = "test-pod"
+            mock_pod.spec.containers = [mock_container]
+            mock_pod.spec.host_network = False
+            mock_pod.spec.host_pid = False
+            mock_pod.spec.host_ipc = False
+            mock_pod.spec.volumes = None
+
+            mock_pods = Mock()
+            mock_pods.items = [mock_pod]
+            scanner.v1_api.list_pod_for_all_namespaces = Mock(
+                return_value=mock_pods
             )
 
-            result = scanner.scan_secrets()
+            result = scanner.scan_container_security()
 
             assert result["success"] == True
-            assert result["count"] == 1
-            assert len(result["findings"]) == 1
+            assert result["count"] >= 1
+            assert len(result["findings"]) >= 1
             assert result["findings"][0]["namespace"] == "default"
-            assert result["findings"][0]["name"] == "test-secret"
+            assert result["findings"][0]["pod_name"] == "test-pod"
 
     def test_scan_handles_errors_gracefully(self):
         """Test that scanner handles API errors gracefully"""
@@ -61,11 +73,11 @@ class TestClusterScanner:
 
         with patch("scanner.cluster_scanner.config"):
             scanner = ClusterScanner(output_dir="/tmp/test_output")
-            scanner.v1_api.list_secret_for_all_namespaces = Mock(
+            scanner.v1_api.list_pod_for_all_namespaces = Mock(
                 side_effect=Exception("API Error")
             )
 
-            result = scanner.scan_secrets()
+            result = scanner.scan_container_security()
 
             assert result["success"] == False
             assert "error" in result

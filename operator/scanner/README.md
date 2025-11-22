@@ -1,102 +1,109 @@
 # Cluster Scanner Module
 
-Advanced Kubernetes security scanner with 6 comprehensive analysis categories.
+Advanced Kubernetes security scanner detecting real vulnerabilities and misconfigurations with high security impact.
 
 ## Scans
 
-### 1️⃣ Secrets (`scan_secrets`)
-**API:** `CoreV1Api.list_secret_for_all_namespaces()`
+### 1️⃣ Container Security (`scan_container_security`)
+**Severity: CRITICAL/HIGH**  
+**API:** `CoreV1Api.list_pod_for_all_namespaces()`
 
-Scans for secrets across all namespaces and extracts:
-- Secret name and namespace
-- Secret type (e.g., Helm, ServiceAccountToken, etc.)
-- Keys stored in the secret
-- Base64-decoded values (first 100 chars for safety)
+Detects critical container security risks:
+- **Privileged containers** - Containers with `privileged: true` (full host access)
+- **Running as root** - Containers without `runAsNonRoot: true` or with `runAsUser: 0`
+- **Dangerous capabilities** - Containers with `SYS_ADMIN`, `NET_ADMIN`, `SYS_MODULE`, etc.
+- **Host network access** - Pods using `hostNetwork: true` (can sniff traffic)
+- **Host PID namespace** - Pods using `hostPID: true` (can see all processes)
+- **Host IPC namespace** - Pods using `hostIPC: true`
+- **Host path mounts** - Volumes mounting host directories with `hostPath`
 
-**Use Case:** Detect exposed secrets, Helm chart values, credentials
-
----
-
-### 2️⃣ Misconfigs (`scan_misconfigs`)
-**API:** `CoreV1Api.list_config_map_for_all_namespaces()`
-
-Scans for configuration issues:
-- ConfigMaps with plaintext data (often contains secrets)
-- Configuration patterns that might indicate security issues
-- Credentials stored in config files
-
-**Use Case:** Find plaintext secrets in ConfigMaps
+**Impact:** Container escape, full host compromise, privilege escalation
 
 ---
 
-### 3️⃣ Workloads (`scan_workloads`)
-**API:** `AppsV1Api.list_deployment_for_all_namespaces()`
+### 2️⃣ Resource Limits (`scan_resource_limits`)
+**Severity: HIGH**  
+**API:** `CoreV1Api.list_pod_for_all_namespaces()`
 
-Analyzes deployment configurations:
-- Deployment metadata and replica counts
-- Container images and configurations
-- Environment variables (sensitive data exposure)
-- Value sources (ConfigMap, Secret references)
+Detects containers without resource limits:
+- Missing CPU limits
+- Missing memory limits
 
-**Use Case:** Audit workload configurations and detect env var leaks
+**Impact:** Denial of Service (DoS) - single container can exhaust cluster resources
 
 ---
 
-### 4️⃣ Privileges (`scan_privileges`)
+### 3️⃣ ServiceAccount Security (`scan_serviceaccount_security`)
+**Severity: MEDIUM**  
+**API:** `CoreV1Api.list_pod_for_all_namespaces()`
+
+Detects ServiceAccount security issues:
+- **Automounted SA tokens** - Pods with `automountServiceAccountToken: true` (default)
+- **Default ServiceAccount usage** - Pods using `default` ServiceAccount
+
+**Impact:** Unnecessary token exposure, potential API server access
+
+---
+
+### 4️⃣ Network Exposure (`scan_network_exposure`)
+**Severity: CRITICAL/HIGH**  
+**API:** `CoreV1Api.list_service_for_all_namespaces()`, `NetworkingV1Api.list_network_policy_for_all_namespaces()`
+
+Detects network security issues:
+- **NodePort services** - Services exposed on all cluster nodes
+- **Unrestricted LoadBalancer** - LoadBalancer services without `loadBalancerSourceRanges` (accessible from 0.0.0.0/0)
+- **Missing NetworkPolicies** - Namespaces without any NetworkPolicy (unrestricted pod-to-pod traffic)
+
+**Impact:** Public internet exposure, lateral movement, network-based attacks
+
+---
+
+### 5️⃣ RBAC Wildcards (`scan_rbac_wildcards`)
+**Severity: CRITICAL**  
 **API:** `RbacAuthorizationV1Api.list_cluster_role()`
 
 Detects dangerous RBAC configurations:
-- Wildcard (`*`) permissions in verbs
-- Wildcard (`*`) in resource access
-- Over-privileged roles
+- Wildcard (`*`) in verbs - Can perform any action
+- Wildcard (`*`) in resources - Can access any resource
+- Wildcard (`*`) in API groups - Can access any API group
+- Combined wildcards - Full cluster admin access
 
-**Use Case:** Identify privilege escalation risks
-
----
-
-### 5️⃣ Exposure (`scan_exposure`)
-**API:** `NetworkingV1Api.list_ingress_for_all_namespaces()`
-
-Maps exposed services:
-- TLS configuration and certificates
-- Ingress rules and host routing
-- Backend service information
-- Exposed endpoints
-
-**Use Case:** Audit public exposure, certificate management
+**Impact:** Privilege escalation, cluster takeover
 
 ---
 
-### 6️⃣ Images (`scan_images`)
+### 6️⃣ Image Security (`scan_image_security`)
+**Severity: HIGH/MEDIUM**  
 **API:** `CoreV1Api.list_pod_for_all_namespaces()`
 
-Catalogs container images:
-- All container images across pods
-- Image pull policies
-- Pod and container metadata
+Detects insecure image configurations:
+- **Mutable tags** - Images using `:latest` or no tag (unpredictable deployments)
+- **Untrusted registries** - Images from registries outside trusted list
 
-**Use Case:** Scan images for vulnerabilities, track image versions
+**Trusted registries:** docker.io, gcr.io, ghcr.io, registry.k8s.io, quay.io, mcr.microsoft.com
+
+**Impact:** Supply chain attacks, unpredictable behavior, compromised images
 
 ---
 
 ## Output Format
 
-All scans save to `/app/scanner_output/cluster_status.json`:
+All scans save to `/app/scanner_output/cluster_graph.json`:
 
 ```json
 {
   "timestamp": "2025-11-22T13:01:25.696301Z",
   "scans": {
-    "secrets": {
+    "container_security": {
       "success": true,
-      "count": 5,
+      "count": 3,
       "findings": [...]
     },
-    "misconfigs": { ... },
-    "workloads": { ... },
-    "privileges": { ... },
-    "exposure": { ... },
-    "images": { ... }
+    "resource_limits": { ... },
+    "serviceaccount_security": { ... },
+    "network_exposure": { ... },
+    "rbac_wildcards": { ... },
+    "image_security": { ... }
   }
 }
 ```
@@ -113,4 +120,4 @@ supervisord -c /etc/supervisor/conf.d/supervisord.conf
 
 ## Integration with API
 
-The main API server reads scanner output via `/cluster/status` endpoint.
+The main API server reads scanner output via `/api/graph` endpoint.

@@ -1,6 +1,5 @@
 """Cluster scanner module for monitoring Kubernetes cluster status"""
 import json
-import base64
 from datetime import datetime
 from pathlib import Path
 from kubernetes import client, config
@@ -31,101 +30,109 @@ class ClusterScanner:
         self.rbac_api = client.RbacAuthorizationV1Api()
         self.networking_api = client.NetworkingV1Api()
     
-    # ========== SCAN 1: SECRETS ==========
-    def scan_secrets(self) -> dict:
-        """Scan for secrets across all namespaces"""
+    # ========== SCAN 1: CONTAINER SECURITY ==========
+    def scan_container_security(self) -> dict:
+        """Detect critical container security risks: privileged containers, host access, root users"""
         try:
-            secrets = self.v1_api.list_secret_for_all_namespaces()
+            pods = self.v1_api.list_pod_for_all_namespaces()
             findings = []
             
-            for secret in secrets.items:
-                secret_data = {
-                    "namespace": secret.metadata.namespace,
-                    "name": secret.metadata.name,
-                    "type": secret.type,
-                    "keys": [],
-                    "decoded_data": {}
-                }
+            for pod in pods.items:
+                if not pod.spec.containers:
+                    continue
+                    
+                pod_issues = []
                 
-                if secret.data:
-                    for key, value in secret.data.items():
-                        secret_data["keys"].append(key)
-                        try:
-                            # Decode base64
-                            decoded = base64.b64decode(value).decode('utf-8', errors='ignore')
-                            # Only include first 100 chars for safety
-                            secret_data["decoded_data"][key] = decoded[:100]
-                        except Exception:
-                            secret_data["decoded_data"][key] = "[binary data]"
-                
-                findings.append(secret_data)
-            
-            return {
-                "success": True,
-                "count": len(findings),
-                "findings": findings
-            }
-        except Exception as e:
-            return {"success": False, "error": str(e), "count": 0, "findings": []}
-    
-    # ========== SCAN 2: MISCONFIGS (ConfigMaps) ==========
-    def scan_misconfigs(self) -> dict:
-        """Scan for potential misconfigurations in ConfigMaps"""
-        try:
-            configmaps = self.v1_api.list_config_map_for_all_namespaces()
-            findings = []
-            
-            for cm in configmaps.items:
-                if cm.data:
-                    cm_data = {
-                        "namespace": cm.metadata.namespace,
-                        "name": cm.metadata.name,
-                        "data": cm.data
-                    }
-                    findings.append(cm_data)
-            
-            return {
-                "success": True,
-                "count": len(findings),
-                "findings": findings
-            }
-        except Exception as e:
-            return {"success": False, "error": str(e), "count": 0, "findings": []}
-    
-    # ========== SCAN 3: WORKLOADS ==========
-    def scan_workloads(self) -> dict:
-        """Scan for workload configurations and environment variables"""
-        try:
-            deployments = self.apps_api.list_deployment_for_all_namespaces()
-            findings = []
-            
-            for deploy in deployments.items:
-                if deploy.spec.template.spec.containers:
-                    deploy_data = {
-                        "namespace": deploy.metadata.namespace,
-                        "name": deploy.metadata.name,
-                        "replicas": deploy.spec.replicas,
-                        "containers": []
+                for container in pod.spec.containers:
+                    container_issues = {
+                        "container_name": container.name,
+                        "image": container.image,
+                        "vulnerabilities": []
                     }
                     
-                    for container in deploy.spec.template.spec.containers:
-                        container_data = {
-                            "name": container.name,
-                            "image": container.image,
-                            "env_vars": []
-                        }
-                        
-                        if container.env:
-                            for env_var in container.env:
-                                container_data["env_vars"].append({
-                                    "name": env_var.name,
-                                    "value": env_var.value,
-                                    "value_from": str(env_var.value_from) if env_var.value_from else None
+                    # Check for privileged container
+                    if container.security_context and container.security_context.privileged:
+                        container_issues["vulnerabilities"].append({
+                            "type": "privileged_container",
+                            "severity": "critical",
+                            "description": "Container runs in privileged mode with full host access"
+                        })
+                    
+                    # Check for running as root
+                    run_as_root = False
+                    if container.security_context:
+                        if container.security_context.run_as_user == 0:
+                            run_as_root = True
+                        elif container.security_context.run_as_non_root is False:
+                            run_as_root = True
+                    else:
+                        # No security context means defaults (often root)
+                        run_as_root = True
+                    
+                    if run_as_root:
+                        container_issues["vulnerabilities"].append({
+                            "type": "running_as_root",
+                            "severity": "high",
+                            "description": "Container runs as root user (UID 0)"
+                        })
+                    
+                    # Check for dangerous capabilities
+                    if container.security_context and container.security_context.capabilities:
+                        if container.security_context.capabilities.add:
+                            dangerous_caps = ["SYS_ADMIN", "NET_ADMIN", "SYS_MODULE", "DAC_READ_SEARCH"]
+                            added_caps = [cap for cap in container.security_context.capabilities.add if cap in dangerous_caps]
+                            if added_caps:
+                                container_issues["vulnerabilities"].append({
+                                    "type": "dangerous_capabilities",
+                                    "severity": "high",
+                                    "description": f"Container has dangerous capabilities: {', '.join(added_caps)}"
                                 })
-                        
-                        deploy_data["containers"].append(container_data)
                     
-                    findings.append(deploy_data)
+                    if container_issues["vulnerabilities"]:
+                        pod_issues.append(container_issues)
+                
+                # Check pod-level security issues
+                pod_level_issues = []
+                
+                if pod.spec.host_network:
+                    pod_level_issues.append({
+                        "type": "host_network",
+                        "severity": "critical",
+                        "description": "Pod uses host network namespace, can sniff traffic"
+                    })
+                
+                if pod.spec.host_pid:
+                    pod_level_issues.append({
+                        "type": "host_pid",
+                        "severity": "critical",
+                        "description": "Pod uses host PID namespace, can see all processes"
+                    })
+                
+                if pod.spec.host_ipc:
+                    pod_level_issues.append({
+                        "type": "host_ipc",
+                        "severity": "high",
+                        "description": "Pod uses host IPC namespace"
+                    })
+                
+                # Check for hostPath volumes
+                if pod.spec.volumes:
+                    for volume in pod.spec.volumes:
+                        if volume.host_path:
+                            pod_level_issues.append({
+                                "type": "host_path_mount",
+                                "severity": "critical",
+                                "description": f"Pod mounts host path: {volume.host_path.path}",
+                                "path": volume.host_path.path
+                            })
+                
+                if pod_issues or pod_level_issues:
+                    findings.append({
+                        "namespace": pod.metadata.namespace,
+                        "pod_name": pod.metadata.name,
+                        "containers": pod_issues,
+                        "pod_level": pod_level_issues
+                    })
             
             return {
                 "success": True,
@@ -135,9 +142,184 @@ class ClusterScanner:
         except Exception as e:
             return {"success": False, "error": str(e), "count": 0, "findings": []}
     
-    # ========== SCAN 4: PRIVILEGES ==========
-    def scan_privileges(self) -> dict:
-        """Scan for privileged ClusterRoles and dangerous permissions"""
+    # ========== SCAN 2: RESOURCE LIMITS ==========
+    def scan_resource_limits(self) -> dict:
+        """Detect containers without CPU/memory limits (DoS risk)"""
+        try:
+            pods = self.v1_api.list_pod_for_all_namespaces()
+            findings = []
+            
+            for pod in pods.items:
+                if not pod.spec.containers:
+                    continue
+                
+                containers_without_limits = []
+                
+                for container in pod.spec.containers:
+                    missing_limits = []
+                    
+                    if not container.resources or not container.resources.limits:
+                        missing_limits = ["cpu", "memory"]
+                    else:
+                        if "cpu" not in container.resources.limits:
+                            missing_limits.append("cpu")
+                        if "memory" not in container.resources.limits:
+                            missing_limits.append("memory")
+                    
+                    if missing_limits:
+                        containers_without_limits.append({
+                            "container_name": container.name,
+                            "image": container.image,
+                            "missing_limits": missing_limits,
+                            "severity": "high",
+                            "description": f"Container missing resource limits: {', '.join(missing_limits)}"
+                        })
+                
+                if containers_without_limits:
+                    findings.append({
+                        "namespace": pod.metadata.namespace,
+                        "pod_name": pod.metadata.name,
+                        "containers": containers_without_limits
+                    })
+            
+            return {
+                "success": True,
+                "count": len(findings),
+                "findings": findings
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "count": 0, "findings": []}
+    
+    # ========== SCAN 3: SERVICEACCOUNT SECURITY ==========
+    def scan_serviceaccount_security(self) -> dict:
+        """Detect ServiceAccount token exposure and dangerous default SA permissions"""
+        try:
+            pods = self.v1_api.list_pod_for_all_namespaces()
+            findings = []
+            
+            for pod in pods.items:
+                issues = []
+                
+                # Check if ServiceAccount token is automounted
+                automount = True
+                if pod.spec.automount_service_account_token is False:
+                    automount = False
+                
+                if automount:
+                    issues.append({
+                        "type": "automounted_sa_token",
+                        "severity": "medium",
+                        "description": "ServiceAccount token automatically mounted in pod",
+                        "service_account": pod.spec.service_account_name or "default"
+                    })
+                
+                # Check if using default ServiceAccount
+                sa_name = pod.spec.service_account_name or "default"
+                if sa_name == "default":
+                    issues.append({
+                        "type": "default_serviceaccount",
+                        "severity": "medium",
+                        "description": "Pod uses default ServiceAccount (check if it has unnecessary permissions)"
+                    })
+                
+                if issues:
+                    findings.append({
+                        "namespace": pod.metadata.namespace,
+                        "pod_name": pod.metadata.name,
+                        "service_account": sa_name,
+                        "issues": issues
+                    })
+            
+            return {
+                "success": True,
+                "count": len(findings),
+                "findings": findings
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "count": 0, "findings": []}
+    
+    # ========== SCAN 4: NETWORK EXPOSURE ==========
+    def scan_network_exposure(self) -> dict:
+        """Detect NodePort/LoadBalancer services and missing NetworkPolicies"""
+        try:
+            findings = []
+            
+            # Check for exposed services
+            services = self.v1_api.list_service_for_all_namespaces()
+            for svc in services.items:
+                issues = []
+                
+                if svc.spec.type == "NodePort":
+                    issues.append({
+                        "type": "nodeport_service",
+                        "severity": "high",
+                        "description": "Service exposed on all nodes via NodePort",
+                        "ports": [{"port": port.node_port, "target_port": port.target_port} 
+                                 for port in (svc.spec.ports or []) if port.node_port]
+                    })
+                
+                if svc.spec.type == "LoadBalancer":
+                    # Check if source ranges are restricted
+                    if not svc.spec.load_balancer_source_ranges:
+                        issues.append({
+                            "type": "unrestricted_loadbalancer",
+                            "severity": "critical",
+                            "description": "LoadBalancer service accessible from any IP (0.0.0.0/0)",
+                            "external_ips": svc.status.load_balancer.ingress if svc.status.load_balancer else []
+                        })
+                    else:
+                        issues.append({
+                            "type": "loadbalancer_service",
+                            "severity": "medium",
+                            "description": "LoadBalancer service with restricted source ranges",
+                            "source_ranges": svc.spec.load_balancer_source_ranges
+                        })
+                
+                if issues:
+                    findings.append({
+                        "namespace": svc.metadata.namespace,
+                        "service_name": svc.metadata.name,
+                        "type": svc.spec.type,
+                        "issues": issues
+                    })
+            
+            # Check for namespaces without NetworkPolicies
+            namespaces = self.v1_api.list_namespace()
+            network_policies = self.networking_api.list_network_policy_for_all_namespaces()
+            
+            # Build set of namespaces with policies
+            ns_with_policies = set()
+            for np in network_policies.items:
+                ns_with_policies.add(np.metadata.namespace)
+            
+            for ns in namespaces.items:
+                ns_name = ns.metadata.name
+                # Skip system namespaces
+                if ns_name in ["kube-system", "kube-public", "kube-node-lease"]:
+                    continue
+                    
+                if ns_name not in ns_with_policies:
+                    findings.append({
+                        "namespace": ns_name,
+                        "type": "namespace_without_netpol",
+                        "issues": [{
+                            "type": "no_network_policy",
+                            "severity": "high",
+                            "description": "Namespace has no NetworkPolicy (unrestricted pod-to-pod traffic)"
+                        }]
+                    })
+            
+            return {
+                "success": True,
+                "count": len(findings),
+                "findings": findings
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "count": 0, "findings": []}
+    
+    # ========== SCAN 5: RBAC WILDCARDS ==========
+    def scan_rbac_wildcards(self) -> dict:
+        """Detect dangerous RBAC permissions with wildcard (*) access"""
         try:
             cluster_roles = self.rbac_api.list_cluster_role()
             findings = []
@@ -148,21 +330,35 @@ class ClusterScanner:
                 if role.rules:
                     for rule in role.rules:
                         # Check for wildcard permissions
-                        if rule.verbs and ('*' in rule.verbs or '*' in (rule.resources or [])):
-                            rule_data = {
+                        has_wildcard_verb = rule.verbs and '*' in rule.verbs
+                        has_wildcard_resource = rule.resources and '*' in rule.resources
+                        has_wildcard_apigroup = rule.api_groups and '*' in rule.api_groups
+                        
+                        if has_wildcard_verb or has_wildcard_resource or has_wildcard_apigroup:
+                            severity = "critical"
+                            if has_wildcard_verb and has_wildcard_resource:
+                                description = "Full cluster admin access (can do anything on any resource)"
+                            elif has_wildcard_verb:
+                                description = f"Can perform any action on: {', '.join(rule.resources or ['all'])}"
+                            elif has_wildcard_resource:
+                                description = f"Can access all resources with: {', '.join(rule.verbs or ['all'])}"
+                            else:
+                                description = "Has wildcard permissions in API groups"
+                            
+                            dangerous_rules.append({
                                 "verbs": rule.verbs,
                                 "resources": rule.resources,
-                                "api_groups": rule.api_groups
-                            }
-                            dangerous_rules.append(rule_data)
+                                "api_groups": rule.api_groups,
+                                "severity": severity,
+                                "description": description
+                            })
                 
                 if dangerous_rules:
-                    role_data = {
-                        "name": role.metadata.name,
-                        "namespace": role.metadata.namespace,
+                    findings.append({
+                        "role_name": role.metadata.name,
+                        "role_type": "ClusterRole",
                         "dangerous_rules": dangerous_rules
-                    }
-                    findings.append(role_data)
+                    })
             
             return {
                 "success": True,
@@ -172,81 +368,67 @@ class ClusterScanner:
         except Exception as e:
             return {"success": False, "error": str(e), "count": 0, "findings": []}
     
-    # ========== SCAN 5: EXPOSURE (Ingress) ==========
-    def scan_exposure(self) -> dict:
-        """Scan for exposed services via Ingress"""
-        try:
-            ingresses = self.networking_api.list_ingress_for_all_namespaces()
-            findings = []
-            
-            for ingress in ingresses.items:
-                ingress_data = {
-                    "namespace": ingress.metadata.namespace,
-                    "name": ingress.metadata.name,
-                    "tls": [],
-                    "rules": []
-                }
-                
-                # TLS configuration
-                if ingress.spec.tls:
-                    for tls in ingress.spec.tls:
-                        ingress_data["tls"].append({
-                            "hosts": tls.hosts,
-                            "secret_name": tls.secret_name
-                        })
-                
-                # Ingress rules
-                if ingress.spec.rules:
-                    for rule in ingress.spec.rules:
-                        rule_data = {
-                            "host": rule.host,
-                            "paths": []
-                        }
-                        
-                        if rule.http and rule.http.paths:
-                            for path in rule.http.paths:
-                                rule_data["paths"].append({
-                                    "path": path.path,
-                                    "service_name": path.backend.service.name if path.backend.service else None,
-                                    "service_port": path.backend.service.port.number if path.backend.service else None
-                                })
-                        
-                        ingress_data["rules"].append(rule_data)
-                
-                findings.append(ingress_data)
-            
-            return {
-                "success": True,
-                "count": len(findings),
-                "findings": findings
-            }
-        except Exception as e:
-            return {"success": False, "error": str(e), "count": 0, "findings": []}
-    
-    # ========== SCAN 6: CONTAINER IMAGES ==========
-    def scan_images(self) -> dict:
-        """Scan for container images across all pods"""
+    # ========== SCAN 6: IMAGE SECURITY ==========
+    def scan_image_security(self) -> dict:
+        """Detect insecure image configurations: :latest tags, missing tags, untrusted registries"""
         try:
             pods = self.v1_api.list_pod_for_all_namespaces()
             findings = []
             
+            # Trusted registries
+            trusted_registries = [
+                "docker.io",
+                "gcr.io",
+                "ghcr.io",
+                "registry.k8s.io",
+                "k8s.gcr.io",
+                "quay.io",
+                "mcr.microsoft.com"
+            ]
+            
             for pod in pods.items:
-                if pod.spec.containers:
-                    pod_data = {
-                        "namespace": pod.metadata.namespace,
-                        "name": pod.metadata.name,
-                        "images": []
-                    }
+                if not pod.spec.containers:
+                    continue
+                
+                image_issues = []
+                
+                for container in pod.spec.containers:
+                    image = container.image
+                    issues = []
                     
-                    for container in pod.spec.containers:
-                        image_data = {
+                    # Check for :latest or missing tag
+                    if image.endswith(":latest") or ":" not in image:
+                        issues.append({
+                            "type": "mutable_image_tag",
+                            "severity": "medium",
+                            "description": "Image uses :latest tag or no tag (unpredictable, not reproducible)"
+                        })
+                    
+                    # Check registry
+                    registry = image.split("/")[0] if "/" in image else "docker.io"
+                    if "." not in registry:  # Short form like "nginx" implies docker.io
+                        registry = "docker.io"
+                    
+                    if not any(registry.endswith(trusted) or registry == trusted for trusted in trusted_registries):
+                        issues.append({
+                            "type": "untrusted_registry",
+                            "severity": "high",
+                            "description": f"Image from untrusted registry: {registry}"
+                        })
+                    
+                    if issues:
+                        image_issues.append({
                             "container_name": container.name,
-                            "image": container.image,
-                            "image_pull_policy": container.image_pull_policy
-                        }
-                        pod_data["images"].append(image_data)
-                    
-                    findings.append(pod_data)
+                            "image": image,
+                            "issues": issues
+                        })
+                
+                if image_issues:
+                    findings.append({
+                        "namespace": pod.metadata.namespace,
+                        "pod_name": pod.metadata.name,
+                        "containers": image_issues
+                    })
             
             return {
                 "success": True,
@@ -261,12 +443,12 @@ class ClusterScanner:
         scan_result = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "scans": {
-                "secrets": self.scan_secrets(),
-                "misconfigs": self.scan_misconfigs(),
-                "workloads": self.scan_workloads(),
-                "privileges": self.scan_privileges(),
-                "exposure": self.scan_exposure(),
-                "images": self.scan_images()
+                "container_security": self.scan_container_security(),
+                "resource_limits": self.scan_resource_limits(),
+                "serviceaccount_security": self.scan_serviceaccount_security(),
+                "network_exposure": self.scan_network_exposure(),
+                "rbac_wildcards": self.scan_rbac_wildcards(),
+                "image_security": self.scan_image_security()
             }
         }
         return scan_result
