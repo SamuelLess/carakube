@@ -19,11 +19,50 @@ const nodeTypes = {
 const elk = new ELK();
 
 /**
+ * Calculates the actual width of a node based on its label content.
+ * Accounts for text width, padding, and CSS constraints.
+ */
+const calculateNodeWidth = (label: string): number => {
+  // Create a temporary canvas to measure text width accurately
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    // Fallback: estimate based on character count
+    const avgCharWidth = 9; // approximate for IBM Plex Sans
+    const estimatedTextWidth = label.length * avgCharWidth;
+    const padding = 32; // 1rem on each side = 16px * 2
+    const minWidth = 100;
+    const maxWidth = 250;
+    return Math.min(Math.max(estimatedTextWidth + padding, minWidth), maxWidth);
+  }
+
+  // Use the same font as defined in GraphNode.module.css
+  // IBM Plex Sans is loaded as --font-ibm variable, defaulting to sans-serif
+  context.font = "400 16px -apple-system, BlinkMacSystemFont, 'IBM Plex Sans', sans-serif";
+  const textMetrics = context.measureText(label);
+  const textWidth = textMetrics.width;
+
+  // Add padding (1rem = 16px on each side) + small buffer for border
+  const padding = 32; // 16px * 2
+  const border = 4; // border width
+  const buffer = 10; // extra buffer for safety
+  const totalWidth = textWidth + padding + border + buffer;
+
+  // Respect CSS constraints: min-width: 100px, max-width: 250px
+  const minWidth = 100;
+  const maxWidth = 250;
+
+  return Math.min(Math.max(totalWidth, minWidth), maxWidth);
+};
+
+/**
  * Computes a deterministic graph layout using ELK (Eclipse Layout Kernel).
  * The layout is guaranteed to be consistent across page reloads by:
  * 1. Sorting nodes and edges by ID before layout computation
  * 2. Using deterministic ELK algorithm options (fixed seed, SIMPLE placement, etc.)
  * 3. Maintaining consistent node ordering throughout the process
+ * 4. Calculating actual node widths based on label content
  */
 const getLayoutedElements = async (
   nodes: Node[],
@@ -39,15 +78,15 @@ const getLayoutedElements = async (
     id: "root",
     layoutOptions: options,
     children: sortedNodes.map((node) => {
-      // Use fixed base dimensions to prevent accumulation on re-layout
-      const baseWidth = 180;
+      // Calculate actual width based on node label content
+      const nodeWidth = calculateNodeWidth(node.data?.label || "");
       const baseHeight = 60;
       // Add extra space for the node type label positioned above the node
-      const labelSpacing = 5;
+      const labelSpacing = 20; // Account for nodeType label
 
       return {
         ...node,
-        width: baseWidth,
+        width: nodeWidth,
         height: baseHeight + labelSpacing,
       };
     }),
@@ -106,11 +145,14 @@ const FlowingTreeGraph: React.FC = () => {
         // Layered is best for directed graphs (trees, flows) with variable node sizes
         "elk.algorithm": "org.eclipse.elk.layered",
 
-        // crucial for variable sizes: ensures nodes don't overlap
-        "elk.spacing.nodeNode": "50",
+        // Increased spacing to prevent horizontal overlap - nodes can be up to 282px wide
+        "elk.spacing.nodeNode": "80",
 
         // Space between layers (levels)
         "elk.layered.spacing.layerNodeBetweenLayers": "200",
+
+        // Additional spacing between nodes in the same layer
+        "elk.layered.spacing.nodeNodeBetweenLayers": "80",
 
         // Use SIMPLE strategy for deterministic placement
         // BRANDES_KOEPF can have non-deterministic behavior

@@ -242,7 +242,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Implementation Section */}
-      <section className={styles.features}>
+      <section className={styles.features} id="features">
         <div className={styles.container}>
           <h2 className={styles.sectionTitle}>Our Implementation</h2>
           <p className={styles.sectionSubtitle}>

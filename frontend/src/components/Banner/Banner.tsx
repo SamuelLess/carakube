@@ -18,11 +18,11 @@ export const Banner = () => {
 
       {!isDemo && (
         <nav className={styles.nav}>
+          <a href="#challenge" className={styles.navLink}>
+            Challenge
+          </a>
           <a href="#features" className={styles.navLink}>
             Features
-          </a>
-          <a href="#pricing" className={styles.navLink}>
-            Pricing
           </a>
           <Link href="/demo" className={styles.demoButton}>
             Live Demo
