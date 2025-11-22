@@ -84,6 +84,7 @@ class ClusterGraphBuilder:
     def add_namespace_contains_links(self) -> None:
         """Add links showing namespace contains pods and services."""
         try:
+            print("🔗 Adding namespace contains links...", flush=True)
             # Namespace contains pods
             pods = self.scanner.v1_api.list_pod_for_all_namespaces()
             for pod in pods.items:
@@ -103,8 +104,9 @@ class ClusterGraphBuilder:
                     "target": f"svc-{ns}-{svc.metadata.name}",
                     "type": "contains",
                 })
+            print(f"✅ Added namespace contains links", flush=True)
         except Exception as e:
-            print(f"❌ Error adding namespace contains links: {e}")
+            print(f"❌ Error adding namespace contains links: {e}", flush=True)
 
     def add_pod_to_node_links(self) -> None:
         """Add links showing pods running on nodes."""

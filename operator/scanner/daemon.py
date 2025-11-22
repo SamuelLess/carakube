@@ -19,14 +19,14 @@ class ScannerDaemon:
     
     def _signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""
-        print(f"\n🛑 Received signal {signum}, shutting down...", flush=True)
+        print(f"\n🛑 Received signal {signum}, shutting down gracefully... 👋", flush=True)
         self.running = False
     
     async def run(self):
         """Main scanner loop"""
         kubeconfig_path = "/kubeconfig/config"
         
-        print("🔍 Scanner Daemon starting...", flush=True)
+        print("🔍 Scanner Daemon starting... 🚀", flush=True)
         print(f"📁 Output directory: {self.scanner.output_dir}", flush=True)
         print(f"⏱️  Scan interval: {self.interval} seconds", flush=True)
         print("📋 Enabled scans:", flush=True)
@@ -46,11 +46,11 @@ class ScannerDaemon:
         if not self.running:
             return
         
-        print("✅ Kubeconfig found! Starting scans...", flush=True)
+        print("✅ Kubeconfig found! Starting scans... 🎯", flush=True)
         
         while self.running:
             try:
-                print(f"\n📊 Running comprehensive cluster scan...", flush=True)
+                print(f"\n📊 Running comprehensive cluster scan... 🔍", flush=True)
                 scan_data = self.scanner.run_and_save()
                 
                 # Print summary
@@ -72,7 +72,7 @@ class ScannerDaemon:
                     break
                 await asyncio.sleep(1)
         
-        print("👋 Scanner daemon stopped gracefully", flush=True)
+        print("👋 Scanner daemon stopped gracefully 🏁", flush=True)
 
 
 async def main():

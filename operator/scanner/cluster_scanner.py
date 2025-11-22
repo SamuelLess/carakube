@@ -281,7 +281,7 @@ class ClusterScanner:
             graph = builder.build_graph()
             return graph
         except Exception as e:
-            print(f"❌ Error scanning topology: {e}", flush=True)
+            print(f"❌ Error scanning topology: {e} 🚨", flush=True)
             return {
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "nodes": [],
@@ -294,10 +294,10 @@ class ClusterScanner:
         try:
             with open(self.output_file, "w") as f:
                 json.dump(scan_data, f, indent=2)
-            print(f"✅ Scan saved to {self.output_file}", flush=True)
+            print(f"✅ Scan saved to {self.output_file} 💾", flush=True)
             return True
         except Exception as e:
-            print(f"❌ Error saving scan: {e}", flush=True)
+            print(f"❌ Error saving scan: {e} 🚨", flush=True)
             return False
     
     def save_graph(self, graph_data: dict) -> bool:
@@ -305,10 +305,10 @@ class ClusterScanner:
         try:
             with open(self.graph_file, "w") as f:
                 json.dump(graph_data, f, indent=2)
-            print(f"✅ Graph saved to {self.graph_file}", flush=True)
+            print(f"✅ Graph saved to {self.graph_file} 🌐", flush=True)
             return True
         except Exception as e:
-            print(f"❌ Error saving graph: {e}", flush=True)
+            print(f"❌ Error saving graph: {e} 🚨", flush=True)
             return False
     
     def run_and_save(self) -> dict:

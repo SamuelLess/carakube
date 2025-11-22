@@ -51,7 +51,7 @@ async def get_graph():
 @app.on_event("startup")
 async def startup_event():
     """Startup event"""
-    print("🚀 Operator API started on port 8000", flush=True)
+    print("🚀 Operator API started on port 8000 🌟", flush=True)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
