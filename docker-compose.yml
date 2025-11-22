@@ -7,7 +7,7 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro,z
       - traefik-certs:/certs
       - traefik-logs:/var/log/traefik
     networks:
@@ -19,13 +19,14 @@ services:
     restart: always
     networks:
       - traefik-proxy
+      - backend
     labels:
       # --- Traefik Labels ---
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-proxy"
 
       # Define the router that handles HTTPS traffic for both www and non-www domains.
-      - "traefik.http.routers.app-secure.rule=Host(`carakube.dev`) || Host(`www.carakube.dev`)"
+      - "traefik.http.routers.app-secure.rule=Host(`carakube.dev`) || Host(`www.carakube.dev`) || Host(`localhost`)"
       - "traefik.http.routers.app-secure.entrypoints=websecure"
       - "traefik.http.routers.app-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.app-secure.service=app-service"
@@ -69,8 +70,7 @@ services:
       - KUBECONFIG=/kubeconfig/config
     networks:
       - carakube-net
-    ports:
-      - "8000:8000"
+      - backend
 
 volumes:
   traefik-certs:
@@ -78,6 +78,7 @@ volumes:
   kubeconfig-data:
 
 networks:
+  backend:
   traefik-proxy:
     name: traefik-proxy
   carakube-net:
