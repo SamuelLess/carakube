@@ -16,5 +16,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 22
-          script_path: .github/workflows/deploy.sh
+          port: 2222
+          script: |
+            cd carakube
+            git fetch
+            git reset --hard origin/main
+            docker compose up --build -d
