@@ -1,9 +1,8 @@
-"use client";
-
 import "@radix-ui/themes/styles.css";
+import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Banner } from "@/components/Banner/Banner";
 import { Sidebar } from "@/components/Sidebar";
-import { useSidebarStore } from "@/store/sidebar";
 import "./globals.css";
 import styles from "./layout.module.css";
 
@@ -49,13 +48,15 @@ const jetBrainsMono = localFont({
   variable: "--font-jetbrains",
 });
 
+export const metadata: Metadata = {
+  title: "carakube",
+};
+
 const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-  const { isOpen } = useSidebarStore();
-
   return (
     <html lang="en">
       <head>
@@ -68,9 +69,8 @@ const RootLayout = ({
         <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
       </head>
-      <body
-        className={`${crimsonPro.variable} ${ibmPlexSans.variable} ${jetBrainsMono.variable} ${!isOpen ? styles["sidebar-closed"] : ""}`}
-      >
+      <body className={`${crimsonPro.variable} ${ibmPlexSans.variable} ${jetBrainsMono.variable} `}>
+        <Banner />
         <main className={styles.main}>{children}</main>
         <Sidebar />
       </body>

@@ -1,0 +1,14 @@
+.banner {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.text {
+  font-family: var(--font-jetbrains);
+  color: var(--carakube-9);
+  font-size: 1.6rem;
+}

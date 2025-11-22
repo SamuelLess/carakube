@@ -47,13 +47,12 @@
 .content {
   flex-grow: 1;
   overflow-y: auto;
-  position: relative;
 }
 
-.content::after {
+.footer::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  top: -30px;
   left: 0;
   right: 0;
   height: 30px;
@@ -64,6 +63,7 @@
 .footer {
   padding-top: 1rem;
   border-top: 1px solid #e0e0e0;
+  position: relative;
 }
 
 .bottomToggleButton {
@@ -100,18 +100,10 @@
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: red;
+  background-color: var(--carakube-10);
   color: white;
   border-radius: 50%;
   padding: 2px 5px;
   font-size: 10px;
   font-family: var(--font-jetbrains);
-}
-
-.critical {
-  background-color: red;
-}
-
-.warning {
-  background-color: orange;
 }

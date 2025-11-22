@@ -36,19 +36,19 @@ export const Sidebar = () => {
           {criticals.length > 0 && (
             <div className={styles.badgeContainer}>
               <ShieldAlert size={24} color="darkred" />
-              <span className={`${styles.badge} ${styles.critical}`}>{criticals.length}</span>
+              <span className={`${styles.badge}`}>{criticals.length}</span>
             </div>
           )}
           {highs.length > 0 && (
             <div className={styles.badgeContainer}>
               <AlertTriangle size={24} color="red" />
-              <span className={`${styles.badge} ${styles.warning}`}>{highs.length}</span>
+              <span className={`${styles.badge}`}>{highs.length}</span>
             </div>
           )}
           {mediums.length > 0 && (
             <div className={styles.badgeContainer}>
               <Info size={24} color="orange" />
-              <span className={`${styles.badge} ${styles.warning}`}>{mediums.length}</span>
+              <span className={`${styles.badge}`}>{mediums.length}</span>
             </div>
           )}
           {incidents.length === 0 && <CheckCircle size={24} color="green" />}
