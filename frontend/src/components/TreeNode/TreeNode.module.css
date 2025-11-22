@@ -1,0 +1,15 @@
+.node {
+  flex-shrink: 0; /* Prevent nodes from shrinking in the flex container */
+  padding: 1rem 1.5rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  min-width: 100px;
+  max-width: 300px;
+  text-align: center;
+  word-wrap: break-word;
+  font-family: var(--font-ibm);
+  z-index: 2;
+  transition: all 0.2s ease-in-out;
+}
