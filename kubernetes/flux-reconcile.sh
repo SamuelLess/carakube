@@ -67,23 +67,27 @@ if ! inc "flux reconcile source git ${GIT_SOURCE_NAME} -n ${FLUX_NAMESPACE} --ti
   exit 1
 fi
 
-if [[ \"${RECONCILE_ALL_KUSTOMIZATIONS}\" == \"true\" ]]; then
-  echo \"==> Reconciling ALL Kustomizations across all namespaces (with-source)...\"
+if [[ "${RECONCILE_ALL_KUSTOMIZATIONS}" == "true" ]]; then
+  echo "==> Reconciling ALL Kustomizations across all namespaces (with-source)..."
   # List as ns|name, then loop
-  mapfile -t KS_LIST < <(inc \"kubectl get kustomizations -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\"|\"}{.metadata.name}{\"\\n\"}{end}'\" | tr -d '\r')
-  if [[ \${#KS_LIST[@]} -eq 0 ]]; then
-    echo \"No Kustomizations found.\"
+  KS_LIST=()
+  while IFS= read -r line; do
+    KS_LIST+=("$line")
+  done < <(inc "kubectl get kustomizations -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\"|\"}{.metadata.name}{\"\\n\"}{end}'" | tr -d '\r')
+
+  if [[ ${#KS_LIST[@]} -eq 0 ]]; then
+    echo "No Kustomizations found."
   else
-    for entry in \"\${KS_LIST[@]}\"; do
-      ks_ns=\${entry%%|*}
-      ks_name=\${entry##*|}
-      echo \"----> Reconciling \${ks_ns}/\${ks_name}\"
-      inc \"flux reconcile kustomization \${ks_name} -n \${ks_ns} --with-source --timeout=${RECONCILE_TIMEOUT}\"
+    for entry in "${KS_LIST[@]}"; do
+      ks_ns=${entry%%|*}
+      ks_name=${entry##*|}
+      echo "----> Reconciling ${ks_ns}/${ks_name}"
+      inc "flux reconcile kustomization ${ks_name} -n ${ks_ns} --with-source --timeout=${RECONCILE_TIMEOUT}"
     done
   fi
 else
-  echo \"==> Reconciling Kustomization '\${KUSTOMIZATION_NAME}' in ns '\${FLUX_NAMESPACE}' (with-source)...\"
-  inc \"flux reconcile kustomization ${KUSTOMIZATION_NAME} -n ${FLUX_NAMESPACE} --with-source --timeout=${RECONCILE_TIMEOUT}\"
+  echo "==> Reconciling Kustomization '${KUSTOMIZATION_NAME}' in ns '${FLUX_NAMESPACE}' (with-source)..."
+  inc "flux reconcile kustomization ${KUSTOMIZATION_NAME} -n ${FLUX_NAMESPACE} --with-source --timeout=${RECONCILE_TIMEOUT}"
 fi
 
-echo \"✅ Reconcile complete for repo ${GITOPS_REPO} (branch: ${GIT_BRANCH}, path: ${GIT_PATH}).\"
+echo "✅ Reconcile complete for repo ${GITOPS_REPO} (branch: ${GIT_BRANCH}, path: ${GIT_PATH})."
