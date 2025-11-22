@@ -17,3 +17,14 @@
 .sidebar-closed {
   padding-right: 50px;
 }
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .main {
+    padding-right: 0;
+  }
+
+  .sidebar-closed {
+    padding-right: 50px;
+  }
+}

@@ -273,7 +273,15 @@ const FlowingTreeGraph: React.FC = () => {
           <Controls position="bottom-left" style={{ bottom: 20, left: 20 }} />
 
           <Panel position="top-right" style={{ zIndex: 1000 }}>
-            <button onClick={() => onLayout(false)} className={styles.resetButton}>
+            <button
+              onClick={() => {
+                onLayout(false);
+                if (rfInstance) {
+                  rfInstance.fitView({ duration: 300 });
+                }
+              }}
+              className={styles.resetButton}
+            >
               Reset Layout
             </button>
           </Panel>
