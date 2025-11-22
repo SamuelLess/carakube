@@ -28,6 +28,8 @@ export const Sidebar = () => {
   const criticals = incidents.filter((i) => i.severity === "critical");
   const highs = incidents.filter((i) => i.severity === "high");
   const mediums = incidents.filter((i) => i.severity === "medium");
+  const low = incidents.filter((i) => i.severity === "low");
+  const info = incidents.filter((i) => i.severity === "info");
 
   if (!isOpen) {
     return (
@@ -51,6 +53,18 @@ export const Sidebar = () => {
               <span className={`${styles.badge}`}>{mediums.length}</span>
             </div>
           )}
+          {low.length > 0 && (
+            <div className={styles.badgeContainer}>
+              <Info size={24} color="blue" />
+              <span className={`${styles.badge}`}>{low.length}</span>
+            </div>
+          )}
+          {info.length > 0 && (
+            <div className={styles.badgeContainer}>
+              <Info size={24} color="black" />
+              <span className={`${styles.badge}`}>{info.length}</span>
+            </div>
+          )}
           {incidents.length === 0 && <CheckCircle size={24} color="green" />}
         </div>
         <button
@@ -66,24 +80,46 @@ export const Sidebar = () => {
   return (
     <div className={styles.sidebar}>
       <div className={styles.content}>
-        <div className={styles.header}>
-          <div className={styles.title}>Critical Vulnerabilities</div>
-          {criticals.map((incident, index) => (
-            <IncidentReportCard key={index} incident={incident} />
-          ))}
-        </div>
-        <div className={styles.header}>
-          <div className={styles.title}>High Vulnerabilities</div>
-          {highs.map((incident, index) => (
-            <IncidentReportCard key={index} incident={incident} />
-          ))}
-        </div>
-        <div className={styles.header}>
-          <div className={styles.title}>Medium Vulnerabilities</div>
-          {mediums.map((incident, index) => (
-            <IncidentReportCard key={index} incident={incident} />
-          ))}
-        </div>
+        {criticals.length && (
+          <div className={styles.header}>
+            <div className={styles.title}>Critical Vulnerabilities</div>
+            {criticals.map((incident, index) => (
+              <IncidentReportCard key={index} incident={incident} />
+            ))}
+          </div>
+        )}
+        {highs.length && (
+          <div className={styles.header}>
+            <div className={styles.title}>High Vulnerabilities</div>
+            {highs.map((incident, index) => (
+              <IncidentReportCard key={index} incident={incident} />
+            ))}
+          </div>
+        )}
+        {mediums.length && (
+          <div className={styles.header}>
+            <div className={styles.title}>Medium Vulnerabilities</div>
+            {mediums.map((incident, index) => (
+              <IncidentReportCard key={index} incident={incident} />
+            ))}
+          </div>
+        )}
+        {low.length && (
+          <div className={styles.header}>
+            <div className={styles.title}>Low Vulnerabilities</div>
+            {low.map((incident, index) => (
+              <IncidentReportCard key={index} incident={incident} />
+            ))}
+          </div>
+        )}
+        {info.length && (
+          <div className={styles.header}>
+            <div className={styles.title}>Medium Vulnerabilities</div>
+            {info.map((incident, index) => (
+              <IncidentReportCard key={index} incident={incident} />
+            ))}
+          </div>
+        )}
       </div>
       <div className={styles.footer}>
         <button onClick={toggle} className={styles.bottomToggleButton}>
