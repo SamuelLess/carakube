@@ -1,11 +1,10 @@
-import time
-import subprocess
-import os
-import asyncio
+import json
 from fastapi import FastAPI
 import uvicorn
+from pathlib import Path
 
-app = FastAPI(title="Carakube Operator")
+app = FastAPI(title="Carakube Operator API")
+SCANNER_OUTPUT_FILE = Path("/app/scanner_output/cluster_status.json")
 
 @app.get("/health")
 async def health():
@@ -15,6 +14,7 @@ async def health():
 @app.get("/test")
 async def test_endpoint():
     """Test endpoint for quick verification"""
+    import time
     return {
         "message": "Test endpoint working!",
         "timestamp": time.time(),
@@ -23,58 +23,21 @@ async def test_endpoint():
 
 @app.get("/cluster/status")
 async def cluster_status():
-    """Get cluster status"""
+    """Get current cluster status from last scan"""
     try:
-        result = subprocess.run(
-            ["kubectl", "get", "nodes"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return {
-            "status": "connected",
-            "nodes": result.stdout
-        }
+        if SCANNER_OUTPUT_FILE.exists():
+            with open(SCANNER_OUTPUT_FILE, "r") as f:
+                data = json.load(f)
+            return {"status": "success", "data": data}
+        else:
+            return {"status": "no_data", "message": "No scan data available yet"}
     except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e)
-        }
-
-async def monitor_cluster():
-    """Background task to monitor cluster"""
-    kubeconfig_path = os.environ.get("KUBECONFIG", "/kubeconfig/config")
-    
-    print(f"Waiting for kubeconfig at {kubeconfig_path}...", flush=True)
-    while not os.path.exists(kubeconfig_path):
-        await asyncio.sleep(2)
-        print("Waiting for kubeconfig...", flush=True)
-
-    print("Kubeconfig found!", flush=True)
-
-    while True:
-        try:
-            print("\n--- Cluster Nodes ---", flush=True)
-            subprocess.run(["kubectl", "get", "nodes"], check=True)
-
-            print("\n--- Flux System Pods ---", flush=True)
-            subprocess.run(["kubectl", "get", "pods", "-n", "flux-system"], check=False)
-
-            print("\n--- Default Namespace Pods ---", flush=True)
-            subprocess.run(["kubectl", "get", "pods", "-n", "default"], check=False)
-
-        except subprocess.CalledProcessError as e:
-            print(f"Error communicating with cluster: {e}", flush=True)
-        except Exception as e:
-            print(f"Unexpected error: {e}", flush=True)
-
-        await asyncio.sleep(5)
+        return {"status": "error", "error": str(e)}
 
 @app.on_event("startup")
 async def startup_event():
-    """Start background monitoring task on startup"""
-    asyncio.create_task(monitor_cluster())
-    print("Operator started...", flush=True)
+    """Startup event"""
+    print("🚀 Operator API started on port 8000", flush=True)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
