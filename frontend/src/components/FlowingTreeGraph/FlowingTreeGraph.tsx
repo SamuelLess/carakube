@@ -3,7 +3,7 @@
 import { Box, Flex, Progress, Theme } from "@radix-ui/themes";
 import type { ElkNode, LayoutOptions } from "elkjs/lib/elk.bundled.js";
 import ELK from "elkjs/lib/elk.bundled.js";
-import React, { useCallback, useEffect, useEffectEvent, useState } from "react";
+import React, { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
 import type { Edge, Node, ReactFlowInstance } from "reactflow";
 import ReactFlow, { Background, ConnectionLineType, Controls, Panel } from "reactflow";
 import "reactflow/dist/style.css";
@@ -131,7 +131,7 @@ const FlowingTreeGraph: React.FC = () => {
   const { nodes, edges, onNodesChange, onEdgesChange, setNodes, onConnect, updateLayoutCounter } =
     useGraphStore();
 
-  const { setSelectedNodeId } = useSelectedNode();
+  const { selectedNodeId, setSelectedNodeId } = useSelectedNode();
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [hidden, setHidden] = useState<boolean>(true);
 
@@ -200,6 +200,26 @@ const FlowingTreeGraph: React.FC = () => {
     setTimeout(() => initialDelayedFormat(), 1000);
   }, []);
 
+  // Highlight edges connected to the selected node
+  const highlightedEdges = useMemo(() => {
+    return edges.map((edge) => {
+      const isConnectedToSelected =
+        selectedNodeId !== null &&
+        (edge.source === selectedNodeId || edge.target === selectedNodeId);
+
+      return {
+        ...edge,
+        style: isConnectedToSelected
+          ? {
+              stroke: "#000000",
+              strokeWidth: 4,
+              opacity: 1,
+            }
+          : undefined,
+      };
+    });
+  }, [edges, selectedNodeId]);
+
   return (
     <>
       {hidden && (
@@ -221,7 +241,7 @@ const FlowingTreeGraph: React.FC = () => {
       <div className={styles.container}>
         <ReactFlow
           nodes={nodes}
-          edges={edges}
+          edges={highlightedEdges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
