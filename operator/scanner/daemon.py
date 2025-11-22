@@ -77,7 +77,7 @@ class ScannerDaemon:
 
 async def main():
     """Entry point for scanner daemon"""
-    daemon = ScannerDaemon(interval=120)
+    daemon = ScannerDaemon(interval=5)
     await daemon.run()
 
 

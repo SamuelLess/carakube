@@ -3,6 +3,8 @@ from fastapi import FastAPI
 import uvicorn
 from pathlib import Path
 
+from autofix import fix_vulnerability
+
 app = FastAPI(title="Carakube Operator API")
 GRAPH_OUTPUT_FILE = Path("/app/scanner_output/cluster_graph.json")
 
@@ -33,6 +35,14 @@ async def get_graph():
             return {"status": "no_data", "message": "No graph data available yet"}
     except Exception as e:
         return {"status": "error", "error": str(e)}
+
+
+@app.post("/api/autofix/fix/")
+async def fix_vulnerability_endpoint():
+
+    result = fix_vulnerability(None)
+    return result
+
 
 @app.on_event("startup")
 async def startup_event():
