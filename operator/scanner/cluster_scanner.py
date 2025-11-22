@@ -46,7 +46,14 @@ class ClusterScanner:
             pods = self.v1_api.list_pod_for_all_namespaces()
             findings = []
             
+            # System namespaces to exclude from security scans to avoid false positives
+            system_namespaces = ["kube-system", "kube-public", "kube-node-lease", "local-path-storage"]
+            
             for pod in pods.items:
+                # Skip system namespaces
+                if pod.metadata.namespace in system_namespaces:
+                    continue
+
                 if not pod.spec.containers:
                     continue
                     
@@ -82,7 +89,7 @@ class ClusterScanner:
                         container_issues["vulnerabilities"].append({
                             "type": "running_as_root",
                             "severity": "high",
-                            "description": "Container runs as root user (UID 0)"
+                            "description": "Container allowed to run as root (UID 0)"
                         })
                     
                     # Check for dangerous capabilities
@@ -158,7 +165,14 @@ class ClusterScanner:
             pods = self.v1_api.list_pod_for_all_namespaces()
             findings = []
             
+            # System namespaces to exclude
+            system_namespaces = ["kube-system", "kube-public", "kube-node-lease", "local-path-storage"]
+            
             for pod in pods.items:
+                # Skip system namespaces
+                if pod.metadata.namespace in system_namespaces:
+                    continue
+
                 if not pod.spec.containers:
                     continue
                 
@@ -176,11 +190,16 @@ class ClusterScanner:
                             missing_limits.append("memory")
                     
                     if missing_limits:
+                        # Determine severity: missing memory limit is critical/high, missing CPU is medium
+                        severity = "high"
+                        if "memory" not in missing_limits and "cpu" in missing_limits:
+                            severity = "medium"
+                            
                         containers_without_limits.append({
                             "container_name": container.name,
                             "image": container.image,
                             "missing_limits": missing_limits,
-                            "severity": "high",
+                            "severity": severity,
                             "description": f"Container missing resource limits: {', '.join(missing_limits)}"
                         })
                 
@@ -206,7 +225,14 @@ class ClusterScanner:
             pods = self.v1_api.list_pod_for_all_namespaces()
             findings = []
             
+            # System namespaces to exclude
+            system_namespaces = ["kube-system", "kube-public", "kube-node-lease", "local-path-storage"]
+            
             for pod in pods.items:
+                # Skip system namespaces
+                if pod.metadata.namespace in system_namespaces:
+                    continue
+
                 issues = []
                 
                 # Check if ServiceAccount token is automounted
@@ -214,21 +240,30 @@ class ClusterScanner:
                 if pod.spec.automount_service_account_token is False:
                     automount = False
                 
+                sa_name = pod.spec.service_account_name or "default"
+                
                 if automount:
+                    # If it's the default SA, it's more concerning because it's often unintentional
+                    severity = "medium" if sa_name == "default" else "low"
+                    desc = "ServiceAccount token automatically mounted"
+                    if sa_name == "default":
+                        desc += " (default SA token is usually useless but increases attack surface)"
+                    else:
+                        desc += " (verify if pod needs API access)"
+                        
                     issues.append({
                         "type": "automounted_sa_token",
-                        "severity": "medium",
-                        "description": "ServiceAccount token automatically mounted in pod",
-                        "service_account": pod.spec.service_account_name or "default"
+                        "severity": severity,
+                        "description": desc,
+                        "service_account": sa_name
                     })
                 
                 # Check if using default ServiceAccount
-                sa_name = pod.spec.service_account_name or "default"
                 if sa_name == "default":
                     issues.append({
                         "type": "default_serviceaccount",
-                        "severity": "medium",
-                        "description": "Pod uses default ServiceAccount (check if it has unnecessary permissions)"
+                        "severity": "low", # Lowered from medium as it's only bad if permissions exist
+                        "description": "Pod uses default ServiceAccount (best practice: create dedicated SA)"
                     })
                 
                 if issues:
@@ -253,15 +288,22 @@ class ClusterScanner:
         try:
             findings = []
             
+            # System namespaces to exclude
+            system_namespaces = ["kube-system", "kube-public", "kube-node-lease", "local-path-storage"]
+            
             # Check for exposed services
             services = self.v1_api.list_service_for_all_namespaces()
             for svc in services.items:
+                # Skip system namespaces
+                if svc.metadata.namespace in system_namespaces:
+                    continue
+
                 issues = []
                 
                 if svc.spec.type == "NodePort":
                     issues.append({
                         "type": "nodeport_service",
-                        "severity": "high",
+                        "severity": "medium", # Downgraded from high as it's often intentional
                         "description": "Service exposed on all nodes via NodePort",
                         "ports": [{"port": port.node_port, "target_port": port.target_port} 
                                  for port in (svc.spec.ports or []) if port.node_port]
@@ -279,7 +321,7 @@ class ClusterScanner:
                     else:
                         issues.append({
                             "type": "loadbalancer_service",
-                            "severity": "medium",
+                            "severity": "low", # Downgraded from medium as this is secure configuration
                             "description": "LoadBalancer service with restricted source ranges",
                             "source_ranges": svc.spec.load_balancer_source_ranges
                         })
@@ -304,7 +346,7 @@ class ClusterScanner:
             for ns in namespaces.items:
                 ns_name = ns.metadata.name
                 # Skip system namespaces
-                if ns_name in ["kube-system", "kube-public", "kube-node-lease"]:
+                if ns_name in system_namespaces:
                     continue
                     
                 if ns_name not in ns_with_policies:
@@ -313,7 +355,7 @@ class ClusterScanner:
                         "type": "namespace_without_netpol",
                         "issues": [{
                             "type": "no_network_policy",
-                            "severity": "high",
+                            "severity": "medium", # Downgraded from high as it's a best practice, not an exploit
                             "description": "Namespace has no NetworkPolicy (unrestricted pod-to-pod traffic)"
                         }]
                     })
@@ -333,7 +375,16 @@ class ClusterScanner:
             cluster_roles = self.rbac_api.list_cluster_role()
             findings = []
             
+            # System roles to exclude (they are expected to be powerful)
+            excluded_roles = ["cluster-admin", "admin", "edit", "view"]
+            
             for role in cluster_roles.items:
+                role_name = role.metadata.name
+                
+                # Skip system roles
+                if role_name in excluded_roles or role_name.startswith("system:"):
+                    continue
+                    
                 dangerous_rules = []
                 
                 if role.rules:
@@ -344,14 +395,28 @@ class ClusterScanner:
                         has_wildcard_apigroup = rule.api_groups and '*' in rule.api_groups
                         
                         if has_wildcard_verb or has_wildcard_resource or has_wildcard_apigroup:
-                            severity = "critical"
+                            # Determine severity
+                            severity = "medium" # Default
+                            description = "Has wildcard permissions"
+                            
                             if has_wildcard_verb and has_wildcard_resource:
+                                severity = "critical"
                                 description = "Full cluster admin access (can do anything on any resource)"
                             elif has_wildcard_verb:
+                                severity = "high"
                                 description = f"Can perform any action on: {', '.join(rule.resources or ['all'])}"
                             elif has_wildcard_resource:
-                                description = f"Can access all resources with: {', '.join(rule.verbs or ['all'])}"
+                                # Check if verbs are read-only
+                                read_only_verbs = {"get", "list", "watch"}
+                                rule_verbs = set(rule.verbs or [])
+                                if rule_verbs.issubset(read_only_verbs):
+                                    severity = "medium"
+                                    description = f"Can read all resources ({', '.join(rule.verbs)})"
+                                else:
+                                    severity = "high"
+                                    description = f"Can access all resources with: {', '.join(rule.verbs or ['all'])}"
                             else:
+                                severity = "low"
                                 description = "Has wildcard permissions in API groups"
                             
                             dangerous_rules.append({
@@ -364,7 +429,7 @@ class ClusterScanner:
                 
                 if dangerous_rules:
                     findings.append({
-                        "role_name": role.metadata.name,
+                        "role_name": role_name,
                         "role_type": "ClusterRole",
                         "dangerous_rules": dangerous_rules
                     })
@@ -384,6 +449,9 @@ class ClusterScanner:
             pods = self.v1_api.list_pod_for_all_namespaces()
             findings = []
             
+            # System namespaces to exclude
+            system_namespaces = ["kube-system", "kube-public", "kube-node-lease", "local-path-storage"]
+            
             # Trusted registries
             trusted_registries = [
                 "docker.io",
@@ -392,10 +460,15 @@ class ClusterScanner:
                 "registry.k8s.io",
                 "k8s.gcr.io",
                 "quay.io",
-                "mcr.microsoft.com"
+                "mcr.microsoft.com",
+                "public.ecr.aws",
             ]
             
             for pod in pods.items:
+                # Skip system namespaces
+                if pod.metadata.namespace in system_namespaces:
+                    continue
+
                 if not pod.spec.containers:
                     continue
                 
@@ -418,11 +491,20 @@ class ClusterScanner:
                     if "." not in registry:  # Short form like "nginx" implies docker.io
                         registry = "docker.io"
                     
-                    if not any(registry.endswith(trusted) or registry == trusted for trusted in trusted_registries):
+                    is_trusted = False
+                    # Check exact match or suffix match for trusted registries
+                    if any(registry.endswith(trusted) or registry == trusted for trusted in trusted_registries):
+                        is_trusted = True
+                    
+                    # Check for AWS ECR pattern (*.dkr.ecr.*.amazonaws.com)
+                    if "dkr.ecr" in registry and "amazonaws.com" in registry:
+                        is_trusted = True
+                        
+                    if not is_trusted:
                         issues.append({
                             "type": "untrusted_registry",
-                            "severity": "high",
-                            "description": f"Image from untrusted registry: {registry}"
+                            "severity": "medium", # Downgraded from high as it's likely a private registry
+                            "description": f"Image from unknown/private registry: {registry} (verify trust)"
                         })
                     
                     if issues:
