@@ -40,6 +40,20 @@ services:
       # Define the service and its internal port.
       - "traefik.http.services.app-service.loadbalancer.server.port=3000"
 
+  cluster:
+    build:
+      context: ./kubernetes
+    privileged: true
+    networks:
+      - carakube-net
+
+  operator:
+    build:
+      context: ./operator
+    depends_on:
+      - cluster
+    networks:
+      - carakube-net
 
 volumes:
   traefik-certs:
@@ -48,3 +62,5 @@ volumes:
 networks:
   traefik-proxy:
     name: traefik-proxy
+  carakube-net:
+    driver: bridge

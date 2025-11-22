@@ -38,7 +38,7 @@ RUN chmod +x /usr/local/bin/start-cluster.sh
 ENV KIND_CLUSTER_NAME=carakube-demo \
     GITOPS_REPO=https://github.com/SamuelLess/hackatum-k8s-flux \
     GIT_BRANCH=main \
-    GIT_PATH=clusters/carakube-demo
+    GIT_PATH=clusters/carakube-demo/flux-system
 
 # docker:dind entrypoint starts dockerd; our script will launch it
 CMD ["/usr/local/bin/start-cluster.sh"]

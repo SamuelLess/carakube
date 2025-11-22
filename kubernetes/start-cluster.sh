@@ -4,14 +4,18 @@ set -e
 : "${KIND_CLUSTER_NAME:=carakube-demo}"
 : "${GITOPS_REPO:=https://github.com/SamuelLess/hackatum-k8s-flux}"
 : "${GIT_BRANCH:=main}"
-: "${GIT_PATH:=clusters/carakube-demo}"
+: "${GIT_PATH:=clusters/carakube-demo/flux-system}"
 
 # Start the Docker daemon (from docker:dind)
 dockerd-entrypoint.sh &
 
+# Force Docker CLI to use the local socket
+export DOCKER_HOST=unix:///var/run/docker.sock
+
 echo "Waiting for Docker daemon..."
-until docker info >/dev/null 2>&1; do
-  sleep 1
+until docker info; do
+  echo "Docker daemon not ready yet. Retrying..."
+  sleep 2
 done
 echo "Docker daemon is up."
 
