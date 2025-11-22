@@ -8,7 +8,14 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
     chmod +x kubectl && \
     mv kubectl /usr/local/bin/
 
+# Install uv
+RUN pip install uv
+
 WORKDIR /app
+COPY pyproject.toml uv.lock ./
 COPY main.py .
 
-CMD ["python", "main.py"]
+# Install dependencies from uv.lock
+RUN uv sync --frozen --no-dev
+
+CMD ["uv", "run", "main.py"]
