@@ -236,17 +236,7 @@ const FlowingTreeGraph: React.FC = () => {
           <Controls />
 
           <Panel position="top-right">
-            <button
-              onClick={() => onLayout(false)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-                background: "#fff",
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-            >
+            <button onClick={() => onLayout(false)} className={styles.resetButton}>
               Reset Layout
             </button>
           </Panel>

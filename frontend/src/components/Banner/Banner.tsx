@@ -18,22 +18,10 @@ export const Banner = () => {
 
       {!isDemo && (
         <nav className={styles.nav}>
-          <a href="#challenge" className={styles.navLink}>
-            Challenge
-          </a>
-          <a href="#features" className={styles.navLink}>
-            Features
-          </a>
           <Link href="/demo" className={styles.demoButton}>
             Live Demo
           </Link>
         </nav>
-      )}
-
-      {isDemo && (
-        <Link href="/" className={styles.backLink}>
-          ← Back to Home
-        </Link>
       )}
     </div>
   );

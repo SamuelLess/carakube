@@ -120,7 +120,9 @@ export const LandingPage = () => {
               <div className={styles.liveStatus}>
                 <div className={styles.statusIndicator}>
                   <div className={styles.pulse} />
-                  <span>Live Cluster Data</span>
+                  <Link href="/demo" style={{ textDecoration: "none", color: "inherit" }}>
+                    <span style={{ cursor: "pointer" }}>Live Cluster Data</span>
+                  </Link>
                 </div>
                 <div className={styles.metrics}>
                   <div className={styles.metric}>
