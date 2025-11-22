@@ -5,4 +5,10 @@ networking:
   apiServerPort: 6443
 nodes:
   - role: control-plane
+    extraPortMappings:
+    - containerPort: 30010   # port on the kind node container
+      hostPort: 8010         # port on the DinD "cluster" container
+      listenAddress: "0.0.0.0"
+      protocol: TCP
+
   - role: worker
