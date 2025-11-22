@@ -211,10 +211,10 @@ const FlowingTreeGraph: React.FC = () => {
         ...edge,
         style: isConnectedToSelected
           ? {
-              stroke: "#000000",
-              strokeWidth: 4,
-              opacity: 1,
-            }
+            stroke: "#000000",
+            strokeWidth: 4,
+            opacity: 1,
+          }
           : undefined,
       };
     });
@@ -253,9 +253,9 @@ const FlowingTreeGraph: React.FC = () => {
           onPaneClick={handlePaneClick}
         >
           <Background />
-          <Controls />
+          <Controls position="bottom-left" style={{ bottom: 20, left: 20 }} />
 
-          <Panel position="top-right">
+          <Panel position="top-right" style={{ zIndex: 1000 }}>
             <button onClick={() => onLayout(false)} className={styles.resetButton}>
               Reset Layout
             </button>

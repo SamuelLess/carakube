@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import type { Edge, Node } from "reactflow";
 import FlowingTreeGraph from "@/components/FlowingTreeGraph";
+import { ResourceDetailPanel } from "@/components/ResourceDetailPanel";
+import { useSelectedNode } from "@/context/SelectedNodeContext";
 import { fetchGraph } from "@/lib/api";
+import type { GraphNode } from "@/lib/apischema";
 import type { NodeData } from "@/store/graph";
 import { useGraphStore } from "@/store/graph";
 import type { VulnerabilityWithId } from "@/store/incidents";
@@ -18,10 +21,12 @@ const DemoPage = () => {
   const { setNodes, setEdges, incrementUpdateLayoutCounter } = useGraphStore((state) => state);
   const { setIncidents } = useIncidentStore();
   const { isOpen } = useSidebarStore();
+  const { selectedNodeId, setSelectedNodeId } = useSelectedNode();
   const [clusterStatus, setClusterStatus] = useState<
     "loading" | "waiting" | "initializing" | "ready" | "empty"
   >("loading");
   const [statusMessage, setStatusMessage] = useState<string>("");
+  const [fullNodesData, setFullNodesData] = useState<GraphNode[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,6 +125,7 @@ const DemoPage = () => {
       // 4. Update Store
       setNodes(newNodes);
       setEdges(newEdges);
+      setFullNodesData(apiNodes);
       if (updateLayout) incrementUpdateLayoutCounter();
     };
 
@@ -132,11 +138,19 @@ const DemoPage = () => {
     return () => clearInterval(intervalId);
   }, [setNodes, setEdges, incrementUpdateLayoutCounter, setIncidents, clusterStatus]);
 
+  // Find the selected node from full data
+  const selectedNode = selectedNodeId
+    ? fullNodesData.find((n) => n.id === selectedNodeId) || null
+    : null;
+
   return (
     <main className={`${styles.main} ${isOpen ? "" : styles["sidebar-closed"]}`}>
-      <div style={{ height: "100%", width: "100%", opacity: clusterStatus !== "ready" ? 0.3 : 1 }}>
+      <div style={{ height: "100%", width: "100%" }}>
         <FlowingTreeGraph />
       </div>
+      {selectedNode && (
+        <ResourceDetailPanel node={selectedNode} onClose={() => setSelectedNodeId(null)} />
+      )}
     </main>
   );
 };

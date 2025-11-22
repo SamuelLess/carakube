@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from kubernetes import client, config
+from kubernetes.client import CustomObjectsApi
 from typing import Any, Dict, Optional
 
 
@@ -29,6 +30,14 @@ class ClusterScanner:
         self.apps_api = client.AppsV1Api()
         self.rbac_api = client.RbacAuthorizationV1Api()
         self.networking_api = client.NetworkingV1Api()
+        
+        # Try to initialize metrics API (may not be available)
+        try:
+            self.metrics_api = CustomObjectsApi()
+            self.has_metrics = True
+        except Exception:
+            self.metrics_api = None
+            self.has_metrics = False
     
     # ========== SCAN 1: CONTAINER SECURITY ==========
     def scan_container_security(self) -> dict:
@@ -462,12 +471,71 @@ class ClusterScanner:
             return graph
         except Exception as e:
             print(f"❌ Error scanning topology: {e} 🚨", flush=True)
+            import traceback
+            traceback.print_exc()
             return {
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "nodes": [],
                 "links": [],
                 "error": str(e)
             }
+    
+    def get_pod_metrics(self, namespace: str, pod_name: str) -> Optional[Dict[str, Any]]:
+        """Get metrics for a specific pod if metrics-server is available"""
+        if not self.has_metrics or not self.metrics_api:
+            return None
+        
+        try:
+            metrics = self.metrics_api.get_namespaced_custom_object(
+                group="metrics.k8s.io",
+                version="v1beta1",
+                namespace=namespace,
+                plural="pods",
+                name=pod_name
+            )
+            
+            containers = []
+            if metrics.get("containers"):
+                for container in metrics["containers"]:
+                    containers.append({
+                        "name": container.get("name"),
+                        "usage": {
+                            "cpu": container.get("usage", {}).get("cpu"),
+                            "memory": container.get("usage", {}).get("memory")
+                        }
+                    })
+            
+            return {
+                "timestamp": metrics.get("timestamp"),
+                "window": metrics.get("window"),
+                "containers": containers
+            }
+        except Exception:
+            return None
+    
+    def get_node_metrics(self, node_name: str) -> Optional[Dict[str, Any]]:
+        """Get metrics for a specific node if metrics-server is available"""
+        if not self.has_metrics or not self.metrics_api:
+            return None
+        
+        try:
+            metrics = self.metrics_api.get_cluster_custom_object(
+                group="metrics.k8s.io",
+                version="v1beta1",
+                plural="nodes",
+                name=node_name
+            )
+            
+            return {
+                "timestamp": metrics.get("timestamp"),
+                "window": metrics.get("window"),
+                "usage": {
+                    "cpu": metrics.get("usage", {}).get("cpu"),
+                    "memory": metrics.get("usage", {}).get("memory")
+                }
+            }
+        except Exception:
+            return None
     
     def save_graph(self, graph_data: dict) -> bool:
         """Save graph result to JSON file"""

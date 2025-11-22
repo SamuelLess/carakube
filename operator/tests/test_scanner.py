@@ -107,16 +107,29 @@ class TestGraphBuilder:
         with patch("scanner.cluster_scanner.config"):
             scanner = Mock(spec=ClusterScanner)
             scanner.v1_api = Mock()
+            scanner.apps_api = Mock()
             scanner.scan_data = {}
 
             # Mock namespace
             mock_ns = Mock()
             mock_ns.metadata.name = "default"
+            mock_ns.metadata.creation_timestamp = None
+            mock_ns.metadata.labels = {}
+            mock_ns.metadata.annotations = {}
             mock_ns.status.phase = "Active"
 
             mock_namespaces = Mock()
             mock_namespaces.items = [mock_ns]
             scanner.v1_api.list_namespace.return_value = mock_namespaces
+            
+            # Mock all the list methods for resource counting
+            scanner.v1_api.list_namespaced_resource_quota.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_limit_range.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_pod.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_service.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_config_map.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_secret.return_value = Mock(items=[])
+            scanner.apps_api.list_namespaced_deployment.return_value = Mock(items=[])
 
             builder = ClusterGraphBuilder(scanner)
             builder.add_namespace_nodes()
@@ -161,17 +174,43 @@ class TestGraphBuilder:
             scanner = Mock(spec=ClusterScanner)
             scanner.v1_api = Mock()
             scanner.scan_data = {}
+            scanner.get_pod_metrics = Mock(return_value=None)
+
+            mock_container = Mock()
+            mock_container.name = "nginx"
+            mock_container.image = "nginx:latest"
+            mock_container.image_pull_policy = "IfNotPresent"
+            mock_container.ports = []
+            mock_container.resources = Mock(requests=None, limits=None)
 
             mock_pod = Mock()
             mock_pod.metadata.namespace = "default"
             mock_pod.metadata.name = "nginx-123"
+            mock_pod.metadata.creation_timestamp = None
+            mock_pod.metadata.owner_references = []
+            mock_pod.metadata.labels = {}
+            mock_pod.metadata.annotations = {}
             mock_pod.status.phase = "Running"
+            mock_pod.status.pod_ip = "10.0.0.1"
+            mock_pod.status.host_ip = "192.168.1.1"
+            mock_pod.status.qos_class = "BestEffort"
+            mock_pod.status.conditions = []
+            mock_pod.status.container_statuses = []
             mock_pod.spec.node_name = "worker-1"
-            mock_pod.spec.containers = [Mock(image="nginx:latest")]
+            mock_pod.spec.restart_policy = "Always"
+            mock_pod.spec.containers = [mock_container]
+            mock_pod.spec.volumes = []
+            mock_pod.spec.tolerations = []
+            mock_pod.spec.node_selector = {}
+            mock_pod.spec.priority = None
+            mock_pod.spec.priority_class_name = None
+            mock_pod.spec.service_account_name = "default"
+            mock_pod.spec.security_context = None
 
             mock_pods = Mock()
             mock_pods.items = [mock_pod]
             scanner.v1_api.list_pod_for_all_namespaces.return_value = mock_pods
+            scanner.v1_api.list_namespaced_event.return_value = Mock(items=[])
 
             builder = ClusterGraphBuilder(scanner)
             builder.add_pod_nodes()
@@ -244,19 +283,53 @@ class TestIntegration:
         with patch("scanner.cluster_scanner.config"):
             scanner = Mock(spec=ClusterScanner)
             scanner.v1_api = Mock()
+            scanner.apps_api = Mock()
             scanner.scan_data = {}
+            scanner.get_pod_metrics = Mock(return_value=None)
+            scanner.get_node_metrics = Mock(return_value=None)
 
-            # Create mock pod and namespace
+            # Create mock namespace with proper attributes
             mock_ns = Mock()
             mock_ns.metadata.name = "default"
+            mock_ns.metadata.creation_timestamp = None
+            mock_ns.metadata.labels = {}
+            mock_ns.metadata.annotations = {}
             mock_ns.status.phase = "Active"
 
+            # Mock the resource quota and limit range lists
+            scanner.v1_api.list_namespaced_resource_quota.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_limit_range.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_pod.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_service.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_config_map.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_secret.return_value = Mock(items=[])
+            scanner.v1_api.list_namespaced_event.return_value = Mock(items=[])
+            scanner.apps_api.list_namespaced_deployment.return_value = Mock(items=[])
+
+            # Create mock pod with all required attributes
             mock_pod = Mock()
             mock_pod.metadata.namespace = "default"
             mock_pod.metadata.name = "nginx"
+            mock_pod.metadata.creation_timestamp = None
+            mock_pod.metadata.owner_references = []
+            mock_pod.metadata.labels = {}
+            mock_pod.metadata.annotations = {}
             mock_pod.status.phase = "Running"
+            mock_pod.status.pod_ip = None
+            mock_pod.status.host_ip = None
+            mock_pod.status.qos_class = None
+            mock_pod.status.conditions = []
+            mock_pod.status.container_statuses = []
             mock_pod.spec.node_name = None
+            mock_pod.spec.restart_policy = "Always"
             mock_pod.spec.containers = []
+            mock_pod.spec.volumes = []
+            mock_pod.spec.tolerations = []
+            mock_pod.spec.node_selector = {}
+            mock_pod.spec.priority = None
+            mock_pod.spec.priority_class_name = None
+            mock_pod.spec.service_account_name = "default"
+            mock_pod.spec.security_context = None
 
             scanner.v1_api.list_namespace.return_value = Mock(items=[mock_ns])
             scanner.v1_api.list_node.return_value = Mock(items=[])
