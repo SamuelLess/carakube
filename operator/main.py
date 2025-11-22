@@ -39,9 +39,56 @@ async def get_graph():
 
 @app.post("/api/autofix/fix/")
 async def fix_vulnerability_endpoint():
-
-    result = fix_vulnerability(None)
-    return result
+    """
+    Fix the first vulnerability found in the scan report.
+    
+    Reads cluster_graph.json, finds the first vulnerability from any node,
+    and passes it to the fix function.
+    """
+    try:
+        # Check if scan report exists
+        if not GRAPH_OUTPUT_FILE.exists():
+            return {
+                "status": "error",
+                "message": "No scan report available. Run a scan first."
+            }
+        
+        # Load the scan report
+        with open(GRAPH_OUTPUT_FILE, "r") as f:
+            graph_data = json.load(f)
+        
+        # Find the first vulnerability in the graph
+        # The file has nodes directly at top level, not wrapped in "data"
+        vulnerability = None
+        node_info = None
+        
+        nodes = graph_data.get("nodes", [])
+        for node in nodes:
+            if "vulnerabilities" in node and len(node["vulnerabilities"]) > 0:
+                vulnerability = node["vulnerabilities"][0]
+                node_info = {
+                    "id": node.get("id"),
+                    "label": node.get("label"),
+                    "type": node.get("type"),
+                    "namespace": node.get("namespace")
+                }
+                break
+        
+        if not vulnerability:
+            return {
+                "status": "success",
+                "message": "No vulnerabilities found in scan report"
+            }
+        
+        # Pass to fix function with context
+        result = fix_vulnerability(vulnerability, node_info)
+        return result
+        
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to process scan report: {str(e)}"
+        }
 
 
 @app.on_event("startup")
