@@ -1,0 +1,11 @@
+.ibm {
+  font-family: var(--font-ibm);
+}
+
+.jetbrain {
+  font-family: var(--font-jetbrains);
+}
+
+.crimson {
+  font-family: var(--font-crimson);
+}
