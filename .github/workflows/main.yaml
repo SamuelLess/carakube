@@ -21,4 +21,4 @@ jobs:
             cd carakube
             git fetch
             git reset --hard origin/main
-            docker compose up --build -d
+            docker compose up --build -d --remove-orphans
