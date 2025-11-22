@@ -8,6 +8,8 @@ import type { NodeData } from "@/store/graph";
 import { useGraphStore } from "@/store/graph";
 import type { VulnerabilityWithId } from "@/store/incidents";
 import { useIncidentStore } from "@/store/incidents";
+import { useSidebarStore } from "@/store/sidebar";
+import styles from "./page.module.css";
 
 const POLL_INTERVAL = 5000;
 
@@ -15,6 +17,7 @@ const Home = () => {
   // Access store setters
   const { setNodes, setEdges, incrementUpdateLayoutCounter } = useGraphStore((state) => state);
   const { setIncidents } = useIncidentStore();
+  const { isOpen } = useSidebarStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,7 +88,13 @@ const Home = () => {
     return () => clearInterval(intervalId);
   }, [setNodes, setEdges, incrementUpdateLayoutCounter, setIncidents]);
 
-  return <FlowingTreeGraph />;
+  return (
+    <main className={`${styles.main} ${isOpen ? "" : styles["sidebar-closed"]}`}>
+      <div style={{ height: "100%", width: "100%" }}>
+        <FlowingTreeGraph />;
+      </div>
+    </main>
+  );
 };
 
 export default Home;

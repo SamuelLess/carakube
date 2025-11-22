@@ -13,17 +13,9 @@ import { useSidebarStore } from "@/store/sidebar";
 import { IncidentReportCard } from "../IncidentReportCard";
 import styles from "./Sidebar.module.css";
 
-// const levelOrder = {
-//   critical: 1,
-//   high: 2,
-//   medium: 3,
-// };
-
 export const Sidebar = () => {
   const { isOpen, toggle } = useSidebarStore();
   const { incidents } = useIncidentStore();
-
-  // const sortedIncidents = [...incidents].sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
 
   const criticals = incidents.filter((i) => i.severity === "critical");
   const highs = incidents.filter((i) => i.severity === "high");
@@ -114,7 +106,7 @@ export const Sidebar = () => {
         ) : null}
         {info.length ? (
           <div className={styles.header}>
-            <div className={styles.title}>Medium Vulnerabilities</div>
+            <div className={styles.title}>Information</div>
             {info.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
             ))}

@@ -35,20 +35,67 @@ const levelMapping = {
 };
 
 export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
-  const { severity, title, type } = incident;
+  const { severity, title } = incident;
   const { label, color, icon } = levelMapping[severity];
 
   return (
     <div className={styles.card}>
-      <div className={styles.icon}>{icon}</div>
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>{title}</h3>
-          <span className={styles.level} style={{ backgroundColor: color }}>
+      <span className={styles.icon}>{icon}</span>
+      <div>
+        <div className={styles.badges}>
+          <span className={styles.badge} style={{ backgroundColor: color }}>
             {label}
           </span>
+          {incident.type === "image" && (
+            <>
+              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
+                Image
+              </div>
+              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+                Image: {incident.image}
+              </div>
+              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+                Pull Policy: {incident.pull_policy}
+              </div>
+            </>
+          )}
+          {incident.type === "misconfig" && (
+            <>
+              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
+                Misconfiguration
+              </div>
+            </>
+          )}
+          {incident.type === "secret" && (
+            <>
+              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
+                Secrets
+              </div>
+              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+                {incident.secret_type}
+              </div>
+              {incident.keys.map((k, i) => {
+                <div key={i} className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+                  KEY: {k}
+                </div>;
+              })}
+            </>
+          )}
+          {incident.type === "workload" && (
+            <>
+              <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
+                Workload
+              </div>
+              <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+                Container: {incident.container}
+              </div>
+            </>
+          )}
         </div>
-        <p className={styles.description}>{title}</p>
+
+        <div className={styles.header}>
+          <h3 className={styles.title}>{title}</h3>
+        </div>
         <a
           href={`https://github.com/`}
           target="_blank"

@@ -72,9 +72,7 @@ const RootLayout = ({
       </head>
       <body className={`${crimsonPro.variable} ${ibmPlexSans.variable} ${jetBrainsMono.variable} `}>
         <Banner />
-        <main className={styles.main}>
-          <div style={{ height: "100%", width: "100%" }}>{children}</div>
-        </main>
+        {children}
         <Sidebar />
       </body>
     </html>

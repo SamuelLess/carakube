@@ -9,13 +9,16 @@
   gap: 1rem;
 }
 
+.badges {
+  display: flex;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .icon {
   flex-shrink: 0;
   margin-top: 2px;
-}
-
-.content {
-  flex-grow: 1;
 }
 
 .header {
@@ -33,13 +36,17 @@
   color: #000000;
 }
 
-.level {
+.badge {
+  flex-shrink: 0;
   font-family: var(--font-jetbrains);
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   color: white;
   text-transform: capitalize;
+  word-wrap: break-word;
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .description {
