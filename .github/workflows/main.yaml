@@ -21,4 +21,6 @@ jobs:
             cd carakube
             git fetch
             git reset --hard origin/main
+            export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
+            export ACCESS_TOKEN="${{ secrets.ACCESS_TOKEN }}"
             docker compose up --build -d --remove-orphans

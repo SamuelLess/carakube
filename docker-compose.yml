@@ -72,10 +72,10 @@ services:
       - kubeconfig-data:/kubeconfig:ro
     environment:
       - KUBECONFIG=/kubeconfig/config
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - ACCESS_TOKEN=${ACCESS_TOKEN}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GITHUB_REPO_OWNER=${GITHUB_REPO_OWNER:-SamuelLess}
-      - GITHUB_REPO_NAME=${GITHUB_REPO_NAME:-hackatum-k8s-flux}
+      - REPO_OWNER=${REPO_OWNER:-SamuelLess}
+      - REPO_NAME=${REPO_NAME:-hackatum-k8s-flux}
     networks:
       - carakube-net
       - backend
