@@ -17,6 +17,8 @@ services:
     build:
       context: frontend
     restart: always
+    ports:
+      - "3000:3000"
     networks:
       - traefik-proxy
       - backend
@@ -64,6 +66,8 @@ services:
       context: ./operator
     depends_on:
       - cluster
+    ports:
+      - "8000:8000"
     volumes:
       - kubeconfig-data:/kubeconfig:ro
     environment:

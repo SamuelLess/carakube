@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import file from "./test.json";
 
 const EXTERNAL_API_URL = "http://localhost:8000/api/graph";
 
 export const GET = async () => {
-  return NextResponse.json(file);
+  //return NextResponse.json(file);
   try {
     const response = await fetch(EXTERNAL_API_URL);
 

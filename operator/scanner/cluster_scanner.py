@@ -3,8 +3,7 @@ import json
 import base64
 from datetime import datetime
 from pathlib import Path
-from kubernetes import client, config, watch
-from kubernetes.client.rest import ApiException
+from kubernetes import client, config
 from typing import Any, Dict, Optional
 
 
@@ -56,7 +55,7 @@ class ClusterScanner:
                             decoded = base64.b64decode(value).decode('utf-8', errors='ignore')
                             # Only include first 100 chars for safety
                             secret_data["decoded_data"][key] = decoded[:100]
-                        except:
+                        except Exception:
                             secret_data["decoded_data"][key] = "[binary data]"
                 
                 findings.append(secret_data)

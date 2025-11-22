@@ -18,16 +18,27 @@ const nodeTypes = {
 
 const elk = new ELK();
 
+/**
+ * Computes a deterministic graph layout using ELK (Eclipse Layout Kernel).
+ * The layout is guaranteed to be consistent across page reloads by:
+ * 1. Sorting nodes and edges by ID before layout computation
+ * 2. Using deterministic ELK algorithm options (fixed seed, SIMPLE placement, etc.)
+ * 3. Maintaining consistent node ordering throughout the process
+ */
 const getLayoutedElements = async (
   nodes: Node[],
   edges: Edge[],
   options: LayoutOptions = {},
   onlyNew: boolean = false
 ) => {
+  // Sort nodes and edges by ID to ensure deterministic ordering
+  const sortedNodes = [...nodes].sort((a, b) => a.id.localeCompare(b.id));
+  const sortedEdges = [...edges].sort((a, b) => a.id.localeCompare(b.id));
+
   const graph: ElkNode = {
     id: "root",
     layoutOptions: options,
-    children: nodes.map((node) => {
+    children: sortedNodes.map((node) => {
       const actualWidth = node.width || 180;
       const actualHeight = node.height || 60;
       // Add extra space for the node type label positioned above the node
@@ -39,7 +50,7 @@ const getLayoutedElements = async (
         height: actualHeight + labelSpacing,
       };
     }),
-    edges: edges.map((edge) => ({
+    edges: sortedEdges.map((edge) => ({
       id: edge.id,
       sources: [edge.source],
       targets: [edge.target],
@@ -52,7 +63,7 @@ const getLayoutedElements = async (
     return {
       nodes:
         layoutedGraph.children?.map((node_1) => {
-          const originalNode = nodes.find((n) => n.id === node_1.id);
+          const originalNode = sortedNodes.find((n) => n.id === node_1.id);
 
           const isUserPositioned =
             originalNode && (originalNode.position.x !== 0 || originalNode.position.y !== 0);
@@ -100,8 +111,25 @@ const FlowingTreeGraph: React.FC = () => {
         // Space between layers (levels)
         "elk.layered.spacing.layerNodeBetweenLayers": "200",
 
-        // Tries to make the graph compact
-        "elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+        // Use SIMPLE strategy for deterministic placement
+        // BRANDES_KOEPF can have non-deterministic behavior
+        "elk.layered.nodePlacement.strategy": "SIMPLE",
+
+        // Ensure deterministic cycle breaking
+        "elk.layered.cycleBreaking.strategy": "DEPTH_FIRST",
+
+        // Make the crossing minimization deterministic
+        "elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+        "elk.layered.crossingMinimization.semiInteractive": "false",
+
+        // Ensure consistent ordering
+        "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
+
+        // Set fixed random seed for any remaining randomization
+        "elk.randomSeed": "42",
+
+        // Top-down direction for clearer hierarchy
+        "elk.direction": "DOWN",
       };
 
       getLayoutedElements(nodes, edges, opts, onlyNew).then((layoutedElements) => {

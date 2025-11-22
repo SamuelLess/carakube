@@ -1,7 +1,6 @@
 """Standalone cluster scanner daemon"""
 import asyncio
 import signal
-import sys
 from scanner.cluster_scanner import ClusterScanner
 
 
@@ -50,11 +49,11 @@ class ScannerDaemon:
         
         while self.running:
             try:
-                print(f"\n📊 Running comprehensive cluster scan... 🔍", flush=True)
+                print("\n📊 Running comprehensive cluster scan... 🔍", flush=True)
                 scan_data = self.scanner.run_and_save()
                 
                 # Print summary
-                print(f"📈 Scan Summary:", flush=True)
+                print("📈 Scan Summary:", flush=True)
                 for scan_name, result in scan_data.get("scans", {}).items():
                     status = "✅" if result.get("success") else "❌"
                     count = result.get("count", 0)

@@ -5,7 +5,6 @@ Converts Kubernetes cluster topology into a simplified graph format
 with nodes (namespaces, nodes, pods, services) and links (contains, runs-on, exposes).
 """
 
-import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from kubernetes import client
@@ -111,7 +110,7 @@ class ClusterGraphBuilder:
                     "target": f"svc-{ns}-{svc.metadata.name}",
                     "type": "contains",
                 })
-            print(f"✅ Added namespace contains links", flush=True)
+            print("✅ Added namespace contains links", flush=True)
         except Exception as e:
             print(f"❌ Error adding namespace contains links: {e}", flush=True)
 
@@ -179,7 +178,9 @@ class ClusterGraphBuilder:
             }
         }
 
-        print(f"✅ Graph built: {graph['stats']['total_nodes']} nodes, {graph['stats']['total_links']} links")
+        total_nodes = graph['stats']['total_nodes']  # type: ignore
+        total_links = graph['stats']['total_links']  # type: ignore
+        print(f"✅ Graph built: {total_nodes} nodes, {total_links} links")
         return graph
 
     def _get_pod_vulnerabilities(self, pod: Any) -> List[Dict[str, Any]]:
@@ -197,7 +198,7 @@ class ClusterGraphBuilder:
                         vulnerabilities.append({
                             "type": "workload",
                             "severity": "medium",
-                            "title": f"Environment variables in deployment",
+                            "title": "Environment variables in deployment",
                             "container": container.get("name"),
                             "env_vars": container.get("env_vars")
                         })
