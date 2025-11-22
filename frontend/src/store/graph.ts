@@ -8,6 +8,7 @@ export type NodeData = {
   apiType?: "namespace" | "node" | "pod" | "service";
   status?: string;
   namespace?: string;
+  vulnerabilityCount?: number;
 };
 
 interface GraphState {

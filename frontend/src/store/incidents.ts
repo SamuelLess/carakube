@@ -15,14 +15,10 @@ export type VulnerabilityWithId = Vulnerability & { id: string };
 
 interface IncidentStore {
   incidents: VulnerabilityWithId[];
-  byId: string | null;
-  setIncidentFilter: (id: string | null) => void;
   setIncidents: (incidents: VulnerabilityWithId[]) => void;
 }
 
 export const useIncidentStore = create<IncidentStore>((set) => ({
   incidents: [],
-  byId: null,
   setIncidents: (incidents) => set({ incidents }),
-  setIncidentFilter: (id: string | null) => set({ byId: id }),
 }));

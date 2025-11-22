@@ -47,6 +47,7 @@ const Home = () => {
             apiType: node.type,
             // 'namespace' exists on Pod/Service/etc types in the Discriminated Union
             namespace: "namespace" in node ? node.namespace : undefined,
+            vulnerabilityCount: node.vulnerabilities?.length || 0,
           },
         };
       });

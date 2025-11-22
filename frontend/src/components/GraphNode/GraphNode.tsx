@@ -27,6 +27,9 @@ const GraphNode: React.FC<NodeProps<NodeData>> = ({ data, id }) => {
       onClick={handleClick}
     >
       {data.label}
+      {data.vulnerabilityCount && data.vulnerabilityCount > 1 && (
+        <span className={styles.vulnerabilityBadge}>{data.vulnerabilityCount}</span>
+      )}
 
       <Handle
         type="target"
