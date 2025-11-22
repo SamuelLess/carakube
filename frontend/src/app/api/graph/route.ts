@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
-const EXTERNAL_API_URL = "http://operator:8000/api/graph";
+// Use Docker service name when in container, localhost when running locally
+// In Docker, use the service name 'operator' from docker-compose
+// When running locally (dev), use localhost
+// Allow override via API_URL environment variable
+const EXTERNAL_API_URL = process.env.API_URL || "http://operator:8000/api/graph";
 
 export const GET = async () => {
   //return NextResponse.json(file);

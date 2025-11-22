@@ -25,7 +25,6 @@ const DemoPage = () => {
   const [clusterStatus, setClusterStatus] = useState<
     "loading" | "waiting" | "initializing" | "ready" | "empty"
   >("loading");
-  const [statusMessage, setStatusMessage] = useState<string>("");
   const [fullNodesData, setFullNodesData] = useState<GraphNode[]>([]);
 
   useEffect(() => {
@@ -34,7 +33,6 @@ const DemoPage = () => {
       if (!call.success) {
         console.error("API Schema Validation Failed");
         setClusterStatus("waiting");
-        setStatusMessage("Waiting for cluster data...");
         return;
       }
 
@@ -43,19 +41,16 @@ const DemoPage = () => {
 
       if (apiStatus === "waiting") {
         setClusterStatus("waiting");
-        setStatusMessage(call.data.message);
         return;
       }
 
       if (apiStatus === "initializing") {
         setClusterStatus("initializing");
-        setStatusMessage(call.data.message);
         return;
       }
 
       if (apiStatus === "empty") {
         setClusterStatus("empty");
-        setStatusMessage(call.data.message);
         // For empty cluster, we still want to show the graph (just empty)
         setClusterStatus("ready");
         return;
@@ -64,7 +59,6 @@ const DemoPage = () => {
       if (apiStatus === "error") {
         console.error("API Error:", call.data.error);
         setClusterStatus("waiting");
-        setStatusMessage("Error loading cluster data");
         return;
       }
 

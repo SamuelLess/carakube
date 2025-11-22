@@ -211,10 +211,10 @@ const FlowingTreeGraph: React.FC = () => {
         ...edge,
         style: isConnectedToSelected
           ? {
-            stroke: "#000000",
-            strokeWidth: 4,
-            opacity: 1,
-          }
+              stroke: "#000000",
+              strokeWidth: 4,
+              opacity: 1,
+            }
           : undefined,
       };
     });
