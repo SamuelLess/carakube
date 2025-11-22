@@ -190,7 +190,7 @@ docker-clean: ## Remove all containers and volumes
 
 ##@ CI/CD
 
-ci: ## Run all CI checks (backend: lint + test + vulture, frontend: eslint + typecheck)
+ci: ## Run all CI checks (backend: lint + test + vulture, frontend: eslint + typecheck + prettier)
 	@echo "$(CYAN)======================================$(NC)"
 	@echo "$(CYAN)Running Complete CI Pipeline$(NC)"
 	@echo "$(CYAN)======================================$(NC)"
@@ -205,9 +205,11 @@ ci: ## Run all CI checks (backend: lint + test + vulture, frontend: eslint + typ
 	@echo ""
 	@echo "$(YELLOW)Frontend Checks...$(NC)"
 	@echo "  → ESLint..."
-	@cd frontend && pnpm exec eslint src/
+	@cd frontend && pnpm exec eslint src/ e2e/ playwright.config.ts
 	@echo "  → Type checking..."
 	@cd frontend && pnpm exec tsc --noEmit
+	@echo "  → Prettier format check..."
+	@cd frontend && pnpm exec prettier --check src/ e2e/ playwright.config.ts
 	@echo ""
 	@echo "$(CYAN)======================================$(NC)"
 	@echo "$(GREEN)✓ All CI checks passed!$(NC)"

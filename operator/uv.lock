@@ -109,6 +109,7 @@ source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "kubernetes" },
+    { name = "requests" },
     { name = "uvicorn" },
 ]
 
@@ -143,6 +144,7 @@ requires-dist = [
     { name = "kubernetes", specifier = ">=30.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
+    { name = "requests", specifier = ">=2.31.0" },
     { name = "uvicorn", specifier = ">=0.38.0" },
 ]
 provides-extras = ["dev"]
