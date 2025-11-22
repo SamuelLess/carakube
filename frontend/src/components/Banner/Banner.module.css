@@ -3,12 +3,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 32px;
+  height: 60px;
   background: rgba(255, 255, 255, 0.95);
   border-bottom: 1px solid #e5e7eb;
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 .logoLink {
