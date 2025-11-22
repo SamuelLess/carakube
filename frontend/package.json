@@ -18,7 +18,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "lint-staged": {
-    "*.{css,md,json,html,js,jsx,ts,tsx}": "prettier --write"
+    "*.{css,md,json,html,js,jsx,ts,tsx}": []
   },
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",

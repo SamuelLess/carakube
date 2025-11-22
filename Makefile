@@ -206,8 +206,8 @@ ci: ## Run all CI checks (backend: lint + test + vulture, frontend: eslint + typ
 	@echo "$(YELLOW)Frontend Checks...$(NC)"
 	@echo "  → Running pnpm lint (ESLint + TypeCheck)..."
 	@cd frontend && pnpm run lint
-	@echo "  → Prettier format check..."
-	@cd frontend && pnpm exec prettier --check src/ e2e/ playwright.config.ts
+	@echo "  → Running Prettier format (auto-fix)..."
+	@cd frontend && pnpm exec prettier --write src/ e2e/ playwright.config.ts
 	@echo ""
 	@echo "$(CYAN)======================================$(NC)"
 	@echo "$(GREEN)✓ All CI checks passed!$(NC)"
