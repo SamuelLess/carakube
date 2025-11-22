@@ -80,46 +80,46 @@ export const Sidebar = () => {
   return (
     <div className={styles.sidebar}>
       <div className={styles.content}>
-        {criticals.length && (
+        {criticals.length ? (
           <div className={styles.header}>
             <div className={styles.title}>Critical Vulnerabilities</div>
             {criticals.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
             ))}
           </div>
-        )}
-        {highs.length && (
+        ) : null}
+        {highs.length ? (
           <div className={styles.header}>
             <div className={styles.title}>High Vulnerabilities</div>
             {highs.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
             ))}
           </div>
-        )}
-        {mediums.length && (
+        ) : null}
+        {mediums.length ? (
           <div className={styles.header}>
             <div className={styles.title}>Medium Vulnerabilities</div>
             {mediums.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
             ))}
           </div>
-        )}
-        {low.length && (
+        ) : null}
+        {low.length ? (
           <div className={styles.header}>
             <div className={styles.title}>Low Vulnerabilities</div>
             {low.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
             ))}
           </div>
-        )}
-        {info.length && (
+        ) : null}
+        {info.length ? (
           <div className={styles.header}>
             <div className={styles.title}>Medium Vulnerabilities</div>
             {info.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
             ))}
           </div>
-        )}
+        ) : null}
       </div>
       <div className={styles.footer}>
         <button onClick={toggle} className={styles.bottomToggleButton}>
