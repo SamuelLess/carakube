@@ -16,7 +16,7 @@ class ScannerDaemon:
         signal.signal(signal.SIGTERM, self._signal_handler)
         signal.signal(signal.SIGINT, self._signal_handler)
     
-    def _signal_handler(self, signum, frame):
+    def _signal_handler(self, signum, _frame):
         """Handle shutdown signals gracefully"""
         print(f"\n🛑 Received signal {signum}, shutting down gracefully... 👋", flush=True)
         self.running = False

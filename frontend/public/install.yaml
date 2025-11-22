@@ -1,0 +1,230 @@
+---
+# Carakube Security Scanner Installation Manifest
+# Deploys the Carakube operator for automated Kubernetes security scanning
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: carakube-system
+  labels:
+    app: carakube
+    component: security-scanner
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: carakube
+  namespace: carakube-system
+  labels:
+    app: carakube
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: carakube
+  labels:
+    app: carakube
+rules:
+  # Core resources
+  - apiGroups: [""]
+    resources: ["pods", "services", "namespaces", "configmaps", "secrets", "nodes", "serviceaccounts"]
+    verbs: ["get", "list", "watch"]
+  
+  # Workload resources
+  - apiGroups: ["apps"]
+    resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  
+  # Networking resources
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["get", "list", "watch"]
+  
+  # RBAC resources for privilege scanning
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "watch"]
+  
+  # Policy resources
+  - apiGroups: ["policy"]
+    resources: ["podsecuritypolicies"]
+    verbs: ["get", "list", "watch"]
+  
+  # Batch resources
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: carakube
+  labels:
+    app: carakube
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: carakube
+subjects:
+  - kind: ServiceAccount
+    name: carakube
+    namespace: carakube-system
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: carakube-config
+  namespace: carakube-system
+  labels:
+    app: carakube
+data:
+  SCAN_INTERVAL: "120"
+  LOG_LEVEL: "INFO"
+  ENABLE_TOPOLOGY: "true"
+  OUTPUT_DIR: "/app/scanner_output"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carakube-operator
+  namespace: carakube-system
+  labels:
+    app: carakube
+    component: operator
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: carakube
+      component: operator
+  template:
+    metadata:
+      labels:
+        app: carakube
+        component: operator
+    spec:
+      serviceAccountName: carakube
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: operator
+          # TODO: Replace with actual image registry when published
+          # For now, users need to build and push their own image:
+          # docker build -t your-registry/carakube-operator:latest ./operator
+          # docker push your-registry/carakube-operator:latest
+          image: carakube/operator:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+              name: http
+              protocol: TCP
+          env:
+            - name: SCAN_INTERVAL
+              valueFrom:
+                configMapKeyRef:
+                  name: carakube-config
+                  key: SCAN_INTERVAL
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: carakube-config
+                  key: LOG_LEVEL
+            - name: ENABLE_TOPOLOGY
+              valueFrom:
+                configMapKeyRef:
+                  name: carakube-config
+                  key: ENABLE_TOPOLOGY
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: scanner-output
+              mountPath: /app/scanner_output
+      volumes:
+        - name: scanner-output
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carakube-api
+  namespace: carakube-system
+  labels:
+    app: carakube
+    component: api
+spec:
+  type: ClusterIP
+  selector:
+    app: carakube
+    component: operator
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# Optional: Create an Ingress if you want to expose the API externally
+# Uncomment and configure based on your ingress controller
+#
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: carakube-ingress
+#   namespace: carakube-system
+#   labels:
+#     app: carakube
+#   annotations:
+#     cert-manager.io/cluster-issuer: letsencrypt-prod
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+# spec:
+#   ingressClassName: nginx
+#   tls:
+#     - hosts:
+#         - carakube.yourdomain.com
+#       secretName: carakube-tls
+#   rules:
+#     - host: carakube.yourdomain.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: carakube-api
+#                 port:
+#                   number: 80

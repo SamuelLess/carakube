@@ -1,0 +1,257 @@
+.terminal {
+  background: #0d1117;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 80px rgba(0, 123, 255, 0.1);
+  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: var(--font-jetbrains), "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
+  position: relative;
+}
+
+.terminal::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(56, 189, 248, 0.5) 20%,
+    rgba(139, 92, 246, 0.5) 50%,
+    rgba(236, 72, 153, 0.5) 80%,
+    transparent
+  );
+  animation: scanline 3s linear infinite;
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(500px);
+  }
+}
+
+.terminalHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #161b22;
+  border-bottom: 1px solid #21262d;
+}
+
+.terminalButtons {
+  display: flex;
+  gap: 8px;
+  min-width: 52px;
+}
+
+.terminalButtonRed,
+.terminalButtonYellow,
+.terminalButtonGreen {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.terminalButtonRed {
+  background: #ff5f56;
+  box-shadow: 0 0 0 1px rgba(255, 95, 86, 0.3);
+}
+
+.terminalButtonYellow {
+  background: #ffbd2e;
+  box-shadow: 0 0 0 1px rgba(255, 189, 46, 0.3);
+}
+
+.terminalButtonGreen {
+  background: #27c93f;
+  box-shadow: 0 0 0 1px rgba(39, 201, 63, 0.3);
+}
+
+.terminalTitle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #8b949e;
+  font-weight: 500;
+}
+
+.terminalTitleSub {
+  color: #484f58;
+}
+
+.terminalHeaderSpacer {
+  min-width: 52px;
+}
+
+.terminalBody {
+  padding: 24px;
+  min-height: 400px;
+  max-height: 500px;
+  overflow-y: auto;
+  background: #0d1117;
+  position: relative;
+}
+
+/* Custom scrollbar */
+.terminalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+.terminalBody::-webkit-scrollbar-track {
+  background: #161b22;
+}
+
+.terminalBody::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+.terminalBody::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
+}
+
+.terminalLine {
+  margin-bottom: 4px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.commandLine {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.prompt {
+  color: #7ee787;
+  font-weight: 600;
+  user-select: none;
+}
+
+.command {
+  color: #c9d1d9;
+  flex: 1;
+}
+
+.cursor {
+  color: #58a6ff;
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.commentLine {
+  color: #8b949e;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  font-style: italic;
+  margin: 12px 0 8px 0;
+}
+
+.outputLine {
+  color: #8b949e;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  padding-left: 24px;
+  font-family: var(--font-jetbrains), monospace;
+}
+
+.successLine {
+  color: #7ee787;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding-left: 24px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Glow effects for success */
+.successLine::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background: #7ee787;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #7ee787;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .terminal {
+    border-radius: 8px;
+  }
+
+  .terminalBody {
+    padding: 16px;
+    min-height: 350px;
+    font-size: 0.85rem;
+  }
+
+  .commandLine,
+  .commentLine,
+  .successLine {
+    font-size: 0.85rem;
+  }
+
+  .outputLine {
+    font-size: 0.8rem;
+  }
+}
+
+/* Add subtle scan effect */
+.terminalBody::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(13, 17, 23, 0.95) 0px,
+    rgba(13, 17, 23, 0.98) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  opacity: 0.03;
+}

@@ -1,0 +1,599 @@
+.landing {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+/* Hero Section */
+.hero {
+  padding: 96px 32px 64px;
+  background: linear-gradient(to bottom, #fafafa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.container {
+  max-width: 100%;
+  padding: 0 32px;
+  margin: 0 auto;
+}
+
+.heroContent {
+  max-width: 100%;
+  margin: 0 auto 64px;
+  text-align: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.gradient {
+  background: linear-gradient(135deg, var(--carakube-7) 0%, var(--carakube-9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #6b7280;
+  margin-bottom: 24px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.primaryButton {
+  background: #111827;
+  color: white;
+}
+
+.primaryButton:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
+}
+
+.secondaryButton {
+  background: white;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.secondaryButton:hover {
+  border-color: #9ca3af;
+}
+
+.installSection {
+  margin-bottom: 40px;
+}
+
+.installLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #f5f3ff 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e40af;
+  margin-bottom: 20px;
+}
+
+.installLabel svg {
+  color: #3b82f6;
+}
+
+.liveStatus {
+  padding: 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.statusIndicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #059669;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.metricValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  font-family: var(--font-jetbrains), monospace;
+}
+
+.metricLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.heroVisual {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Features Section */
+.features {
+  padding: 80px 32px;
+  background: white;
+}
+
+.sectionTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 12px;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 48px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.featureCard {
+  padding: 24px;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.featureCard:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.featureIcon {
+  width: 48px;
+  height: 48px;
+  background: #111827;
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.featureTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #111827;
+}
+
+.featureDescription {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
+.featureList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.featureItem svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+/* Architecture Section */
+.architecture {
+  padding: 80px 32px;
+  background: #fafafa;
+  border-top: 1px solid #e5e7eb;
+}
+
+.archDiagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.archStep {
+  flex: 1;
+  min-width: 200px;
+  max-width: 240px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.archNumber {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 12px;
+  background: #111827;
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-jetbrains), monospace;
+}
+
+.archStep h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.archStep p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.archStep code {
+  display: inline-block;
+  padding: 4px 8px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: var(--font-jetbrains), monospace;
+  color: #374151;
+}
+
+.archArrow {
+  font-size: 1.5rem;
+  color: #d1d5db;
+  font-weight: 300;
+}
+
+.techStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.stackItem {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 20px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.stackLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stackValue {
+  font-size: 0.875rem;
+  color: #111827;
+  font-family: var(--font-jetbrains), monospace;
+}
+
+/* Pricing Section */
+.pricing {
+  padding: 80px 32px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.pricingCard {
+  padding: 24px;
+  background: #fafafa;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.pricingCard:hover {
+  border-color: #9ca3af;
+}
+
+.pricingCardFeatured {
+  background: white;
+  border-color: #111827;
+  border-width: 2px;
+}
+
+.featuredBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  background: #111827;
+  color: white;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pricingHeader {
+  margin-bottom: 20px;
+}
+
+.pricingHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.priceAmount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #111827;
+  font-family: var(--font-jetbrains), monospace;
+}
+
+.pricePeriod {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.pricingFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.pricingFeatures li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 0.875rem;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.pricingFeatures li:last-child {
+  border-bottom: none;
+}
+
+.pricingFeatures li svg {
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.pricingButton {
+  width: 100%;
+  padding: 12px;
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.pricingButton:hover {
+  background: #1f2937;
+}
+
+.pricingCardFeatured .pricingButton {
+  background: #111827;
+}
+
+/* CTA Section */
+.cta {
+  padding: 80px 32px;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border-top: 1px solid #e5e7eb;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.ctaContent h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.ctaContent p {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: #111827;
+  color: white;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.ctaButton:hover {
+  background: #1f2937;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero {
+    padding: 64px 16px 48px;
+  }
+
+  .heroContent {
+    margin-bottom: 48px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .cta {
+    flex-direction: column;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .archDiagram {
+    flex-direction: column;
+  }
+
+  .archArrow {
+    transform: rotate(90deg);
+  }
+
+  .stackItem {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .pricingGrid {
+    grid-template-columns: 1fr;
+  }
+}
