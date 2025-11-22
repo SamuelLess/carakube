@@ -1,6 +1,7 @@
 import "@radix-ui/themes/styles.css";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import "reactflow/dist/style.css";
 import { Banner } from "@/components/Banner/Banner";
 import { Sidebar } from "@/components/Sidebar";
 import "./globals.css";
@@ -71,7 +72,9 @@ const RootLayout = ({
       </head>
       <body className={`${crimsonPro.variable} ${ibmPlexSans.variable} ${jetBrainsMono.variable} `}>
         <Banner />
-        <main className={styles.main}>{children}</main>
+        <main className={styles.main}>
+          <div style={{ height: "100%", width: "100%" }}>{children}</div>
+        </main>
         <Sidebar />
       </body>
     </html>
