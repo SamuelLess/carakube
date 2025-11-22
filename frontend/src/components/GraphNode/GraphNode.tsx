@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 import type { NodeProps } from "reactflow";
 import { Handle, Position } from "reactflow";
+import { useSelectedNode } from "@/context/SelectedNodeContext";
 import type { NodeData } from "@/store/graph";
 import styles from "./GraphNode.module.css";
 
@@ -11,11 +12,19 @@ const typeToColor = {
   service: "4px solid var(--carakube-9)",
 };
 
-const GraphNode: React.FC<NodeProps<NodeData>> = ({ data }) => {
+const GraphNode: React.FC<NodeProps<NodeData>> = ({ data, id }) => {
+  const { selectedNodeId, setSelectedNodeId } = useSelectedNode();
+  const isSelected = selectedNodeId === id;
+
+  const handleClick = () => {
+    setSelectedNodeId(isSelected ? null : id);
+  };
+
   return (
     <div
-      className={styles.node}
+      className={`${styles.node} ${isSelected ? styles.selected : ""}`}
       style={{ border: data.apiType ? typeToColor[data.apiType] : "inherit" }}
+      onClick={handleClick}
     >
       {data.label}
 

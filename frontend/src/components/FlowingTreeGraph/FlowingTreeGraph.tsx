@@ -7,6 +7,7 @@ import React, { useCallback, useEffect, useEffectEvent, useState } from "react";
 import type { Edge, Node, ReactFlowInstance } from "reactflow";
 import ReactFlow, { Background, ConnectionLineType, Controls, Panel } from "reactflow";
 import "reactflow/dist/style.css";
+import { useSelectedNode } from "@/context/SelectedNodeContext";
 import { useGraphStore } from "@/store/graph";
 import GraphNode from "../GraphNode";
 import styles from "./FlowingTreeGraph.module.css";
@@ -77,8 +78,13 @@ const FlowingTreeGraph: React.FC = () => {
   const { nodes, edges, onNodesChange, onEdgesChange, setNodes, onConnect, updateLayoutCounter } =
     useGraphStore();
 
+  const { setSelectedNodeId } = useSelectedNode();
   const [rfInstance, setRfInstance] = useState<ReactFlowInstance | null>(null);
   const [hidden, setHidden] = useState<boolean>(true);
+
+  const handlePaneClick = useCallback(() => {
+    setSelectedNodeId(null);
+  }, [setSelectedNodeId]);
 
   const onLayout = useCallback(
     (onlyNew?: boolean) => {
@@ -151,6 +157,7 @@ const FlowingTreeGraph: React.FC = () => {
           connectionLineType={ConnectionLineType.Straight}
           defaultEdgeOptions={{ type: "straight", animated: true }}
           onInit={setRfInstance}
+          onPaneClick={handlePaneClick}
         >
           <Background />
           <Controls />

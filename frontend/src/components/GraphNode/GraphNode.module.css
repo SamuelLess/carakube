@@ -12,4 +12,16 @@
   font-family: var(--font-ibm);
   z-index: 2;
   transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.node:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.node.selected {
+  transform: scale(1.1);
+  border-width: 3px;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }

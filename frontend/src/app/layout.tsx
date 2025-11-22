@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "reactflow/dist/style.css";
 import { Banner } from "@/components/Banner/Banner";
 import { Sidebar } from "@/components/Sidebar";
+import { SelectedNodeProvider } from "@/context/SelectedNodeContext";
 import "./globals.css";
 import styles from "./layout.module.css";
 
@@ -71,9 +72,11 @@ const RootLayout = ({
         <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
       </head>
       <body className={`${crimsonPro.variable} ${ibmPlexSans.variable} ${jetBrainsMono.variable} `}>
-        <Banner />
-        {children}
-        <Sidebar />
+        <SelectedNodeProvider>
+          <Banner />
+          {children}
+          <Sidebar />
+        </SelectedNodeProvider>
       </body>
     </html>
   );
