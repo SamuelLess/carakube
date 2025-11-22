@@ -21,3 +21,10 @@
   background: #e0e0e0;
   transition: background-color 0.05s ease;
 }
+
+/* Hide ReactFlow Controls (zoom buttons) on mobile */
+@media (max-width: 768px) {
+  .container :global(.react-flow__controls) {
+    display: none;
+  }
+}
