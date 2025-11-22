@@ -83,29 +83,44 @@ export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
       <span className={styles.icon}>{icon}</span>
       <div>
         <div className={styles.badges}>
-          <span className={styles.badge} style={{ backgroundColor: color }}>
+          <span className={`${styles.badge} ${styles.white}`} style={{ backgroundColor: color }}>
             {label}
           </span>
-          <div className={styles.badge} style={{ background: "var(--carakube-9)" }}>
+          <div
+            className={styles.badge}
+            style={{ background: "color-mix(in srgb, var(--carakube-9), white 70%)" }}
+          >
             {getCategory(incident.type)}
           </div>
           {"container" in incident && incident.container && (
-            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+            <div
+              className={styles.badge}
+              style={{ background: "color-mix(in srgb, var(--carakube-10), white 80%)" }}
+            >
               Container: {incident.container}
             </div>
           )}
           {"image" in incident && incident.image && (
-            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+            <div
+              className={styles.badge}
+              style={{ background: "color-mix(in srgb, var(--carakube-10), white 80%)" }}
+            >
               Image: {incident.image}
             </div>
           )}
           {"service_account" in incident && incident.service_account && (
-            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+            <div
+              className={styles.badge}
+              style={{ background: "color-mix(in srgb, var(--carakube-10), white 80%)" }}
+            >
               SA: {incident.service_account}
             </div>
           )}
           {"role_name" in incident && incident.role_name && (
-            <div className={styles.badge} style={{ background: "var(--carakube-10)" }}>
+            <div
+              className={styles.badge}
+              style={{ background: "color-mix(in srgb, var(--carakube-10), white 80%)" }}
+            >
               Role: {incident.role_name}
             </div>
           )}
