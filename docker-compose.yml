@@ -1,7 +1,51 @@
 services:
+  traefik:
+    image: traefik:v3.5.0
+    restart: unless-stopped
+    command:
+      - "--providers.docker.network=traefik-proxy"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - traefik-certs:/certs
+      - traefik-logs:/var/log/traefik
+    networks:
+      - traefik-proxy
+
   frontend:
     build:
       context: frontend
     restart: always
-    ports:
-      - "80:3000"
+    networks:
+      - traefik-proxy
+    labels:
+      # --- Traefik Labels ---
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+
+      # Define the router that handles HTTPS traffic for both www and non-www domains.
+      - "traefik.http.routers.app-secure.rule=Host(`carakube.avesli.eu`)"
+      - "traefik.http.routers.app-secure.entrypoints=websecure"
+      - "traefik.http.routers.app-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.app-secure.service=app-service"
+
+      # Define middlewares
+      - "traefik.http.middlewares.web-compress.compress=true"
+      - "traefik.http.middlewares.web-compress.compress.defaultEncoding=gzip"
+
+      # Apply middlewares to the router.
+      - "traefik.http.routers.app-secure.middlewares=web-compress"
+
+      # Define the service and its internal port.
+      - "traefik.http.services.app-service.loadbalancer.server.port=3000"
+
+
+volumes:
+  traefik-certs:
+  traefik-logs:
+
+networks:
+  traefik-proxy:
