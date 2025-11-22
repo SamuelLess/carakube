@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const EXTERNAL_API_URL = "http://localhost:8000/api/graph";
+const EXTERNAL_API_URL = "http://operator:8000/api/graph";
 
 export const GET = async () => {
   //return NextResponse.json(file);
