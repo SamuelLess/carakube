@@ -4,6 +4,7 @@ export const fetchGraph = async () => {
   try {
     const response = await fetch("/api/graph");
     const json = await response.json();
+    console.log(json);
     const parsed = ClusterDataSchema.safeParse(json);
     if (!parsed.success) return { success: false } as const;
     return { success: true, data: parsed.data } as const;
