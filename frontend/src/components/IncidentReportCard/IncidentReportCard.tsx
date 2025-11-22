@@ -1,12 +1,22 @@
 import { AlertTriangle, GitPullRequest, Info, ShieldAlert } from "lucide-react";
-import type { Incident } from "@/store/incidents";
+import type { VulnerabilityWithId } from "@/store/incidents";
 import styles from "./IncidentReportCard.module.css";
 
 interface IncidentReportCardProps {
-  incident: Incident;
+  incident: VulnerabilityWithId;
 }
 
 const levelMapping = {
+  info: {
+    label: "info",
+    color: "black",
+    icon: <Info size={20} color={"black"} />,
+  },
+  low: {
+    label: "low",
+    color: "blue",
+    icon: <Info size={20} color={"blue"} />,
+  },
   medium: {
     label: "medium",
     color: "orange",
@@ -25,8 +35,8 @@ const levelMapping = {
 };
 
 export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
-  const { level, title, description, prLink } = incident;
-  const { label, color, icon } = levelMapping[level];
+  const { severity, title, type } = incident;
+  const { label, color, icon } = levelMapping[severity];
 
   return (
     <div className={styles.card}>
@@ -38,9 +48,9 @@ export const IncidentReportCard = ({ incident }: IncidentReportCardProps) => {
             {label}
           </span>
         </div>
-        <p className={styles.description}>{description}</p>
+        <p className={styles.description}>{title}</p>
         <a
-          href={`https://github.com/${prLink}`}
+          href={`https://github.com/`}
           target="_blank"
           rel="noopener noreferrer"
           className={styles.prLink}

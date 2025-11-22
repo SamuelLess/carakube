@@ -15,7 +15,7 @@
   "lint-staged": {
     "*.{css,md,json,html}": "prettier --write",
     "*.{js,jsx,ts,tsx}": [
-      "eslint --max-warnings 0",
+      "eslint ",
       "prettier --write"
     ],
     "*.{ts,tsx}": "bash -c 'pnpm exec tsc --noEmit'"

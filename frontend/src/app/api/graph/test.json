@@ -1,0 +1,925 @@
+{
+  "status": "success",
+  "data": {
+    "timestamp": "2025-11-22T15:04:16.275937+00:00",
+    "nodes": [
+      {
+        "id": "ns-default",
+        "label": "default",
+        "type": "namespace",
+        "status": "Active",
+        "vulnerabilities": [
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-root-ca.crt",
+            "data_keys": ["ca.crt"]
+          }
+        ]
+      },
+      {
+        "id": "ns-flux-system",
+        "label": "flux-system",
+        "type": "namespace",
+        "status": "Active",
+        "vulnerabilities": [
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-root-ca.crt",
+            "data_keys": ["ca.crt"]
+          }
+        ]
+      },
+      {
+        "id": "ns-kube-node-lease",
+        "label": "kube-node-lease",
+        "type": "namespace",
+        "status": "Active",
+        "vulnerabilities": [
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-root-ca.crt",
+            "data_keys": ["ca.crt"]
+          }
+        ]
+      },
+      {
+        "id": "ns-kube-public",
+        "label": "kube-public",
+        "type": "namespace",
+        "status": "Active",
+        "vulnerabilities": [
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: cluster-info",
+            "data_keys": ["jws-kubeconfig-abcdef", "kubeconfig"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-root-ca.crt",
+            "data_keys": ["ca.crt"]
+          }
+        ]
+      },
+      {
+        "id": "ns-kube-system",
+        "label": "kube-system",
+        "type": "namespace",
+        "status": "Active",
+        "vulnerabilities": [
+          {
+            "type": "secret",
+            "severity": "high",
+            "title": "Secret: bootstrap-token-abcdef",
+            "secret_type": "bootstrap.kubernetes.io/token",
+            "keys": [
+              "auth-extra-groups",
+              "expiration",
+              "token-id",
+              "token-secret",
+              "usage-bootstrap-authentication",
+              "usage-bootstrap-signing"
+            ]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: coredns",
+            "data_keys": ["Corefile"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: extension-apiserver-authentication",
+            "data_keys": [
+              "client-ca-file",
+              "requestheader-allowed-names",
+              "requestheader-client-ca-file",
+              "requestheader-extra-headers-prefix",
+              "requestheader-group-headers",
+              "requestheader-username-headers"
+            ]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-apiserver-legacy-service-account-token-tracking",
+            "data_keys": ["since"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-proxy",
+            "data_keys": ["config.conf", "kubeconfig.conf"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-root-ca.crt",
+            "data_keys": ["ca.crt"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kubeadm-config",
+            "data_keys": ["ClusterConfiguration"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kubelet-config",
+            "data_keys": ["kubelet"]
+          }
+        ]
+      },
+      {
+        "id": "ns-local-path-storage",
+        "label": "local-path-storage",
+        "type": "namespace",
+        "status": "Active",
+        "vulnerabilities": [
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: kube-root-ca.crt",
+            "data_keys": ["ca.crt"]
+          },
+          {
+            "type": "misconfig",
+            "severity": "medium",
+            "title": "ConfigMap: local-path-config",
+            "data_keys": ["config.json", "helperPod.yaml", "setup", "teardown"]
+          }
+        ]
+      },
+      {
+        "id": "node-carakube-demo-control-plane",
+        "label": "carakube-demo-control-plane",
+        "type": "node",
+        "status": "ready"
+      },
+      {
+        "id": "node-carakube-demo-worker",
+        "label": "carakube-demo-worker",
+        "type": "node",
+        "status": "ready"
+      },
+      {
+        "id": "pod-default-hello-8010-946df65d5-zg7lq",
+        "label": "hello-8010-946df65d5-zg7lq",
+        "type": "pod",
+        "namespace": "default",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: hashicorp/http-echo:0.2.3",
+            "image": "hashicorp/http-echo:0.2.3",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-default-podinfo-b76f6cd59-8rtvg",
+        "label": "podinfo-b76f6cd59-8rtvg",
+        "type": "pod",
+        "namespace": "default",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "podinfod",
+            "env_vars": [
+              {
+                "name": "PODINFO_UI_COLOR",
+                "value": "#34577c",
+                "value_from": null
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: ghcr.io/stefanprodan/podinfo:6.9.3",
+            "image": "ghcr.io/stefanprodan/podinfo:6.9.3",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-default-podinfo-b76f6cd59-nddsp",
+        "label": "podinfo-b76f6cd59-nddsp",
+        "type": "pod",
+        "namespace": "default",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "podinfod",
+            "env_vars": [
+              {
+                "name": "PODINFO_UI_COLOR",
+                "value": "#34577c",
+                "value_from": null
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: ghcr.io/stefanprodan/podinfo:6.9.3",
+            "image": "ghcr.io/stefanprodan/podinfo:6.9.3",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-flux-system-helm-controller-cccd949cd-2fq5q",
+        "label": "helm-controller-cccd949cd-2fq5q",
+        "type": "pod",
+        "namespace": "flux-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "manager",
+            "env_vars": [
+              {
+                "name": "RUNTIME_NAMESPACE",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': {'api_version': 'v1', 'field_path': 'metadata.namespace'},\n 'file_key_ref': None,\n 'resource_field_ref': None,\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMAXPROCS",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.cpu'},\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMEMLIMIT",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.memory'},\n 'secret_key_ref': None}"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: ghcr.io/fluxcd/helm-controller:v1.4.3",
+            "image": "ghcr.io/fluxcd/helm-controller:v1.4.3",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-flux-system-kustomize-controller-789f6ccd67-gh8b6",
+        "label": "kustomize-controller-789f6ccd67-gh8b6",
+        "type": "pod",
+        "namespace": "flux-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "manager",
+            "env_vars": [
+              {
+                "name": "RUNTIME_NAMESPACE",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': {'api_version': 'v1', 'field_path': 'metadata.namespace'},\n 'file_key_ref': None,\n 'resource_field_ref': None,\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMAXPROCS",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.cpu'},\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMEMLIMIT",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.memory'},\n 'secret_key_ref': None}"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: ghcr.io/fluxcd/kustomize-controller:v1.7.2",
+            "image": "ghcr.io/fluxcd/kustomize-controller:v1.7.2",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-flux-system-notification-controller-59f4c9bdc5-rdgqr",
+        "label": "notification-controller-59f4c9bdc5-rdgqr",
+        "type": "pod",
+        "namespace": "flux-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "manager",
+            "env_vars": [
+              {
+                "name": "RUNTIME_NAMESPACE",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': {'api_version': 'v1', 'field_path': 'metadata.namespace'},\n 'file_key_ref': None,\n 'resource_field_ref': None,\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMAXPROCS",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.cpu'},\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMEMLIMIT",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.memory'},\n 'secret_key_ref': None}"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: ghcr.io/fluxcd/notification-controller:v1.7.4",
+            "image": "ghcr.io/fluxcd/notification-controller:v1.7.4",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-flux-system-source-controller-57d9795c86-tb2bx",
+        "label": "source-controller-57d9795c86-tb2bx",
+        "type": "pod",
+        "namespace": "flux-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "manager",
+            "env_vars": [
+              {
+                "name": "RUNTIME_NAMESPACE",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': {'api_version': 'v1', 'field_path': 'metadata.namespace'},\n 'file_key_ref': None,\n 'resource_field_ref': None,\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "TUF_ROOT",
+                "value": "/tmp/.sigstore",
+                "value_from": null
+              },
+              {
+                "name": "GOMAXPROCS",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.cpu'},\n 'secret_key_ref': None}"
+              },
+              {
+                "name": "GOMEMLIMIT",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': None,\n 'file_key_ref': None,\n 'resource_field_ref': {'container_name': 'manager',\n                        'divisor': '0',\n                        'resource': 'limits.memory'},\n 'secret_key_ref': None}"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: ghcr.io/fluxcd/source-controller:v1.7.3",
+            "image": "ghcr.io/fluxcd/source-controller:v1.7.3",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-coredns-7db6d8ff4d-4mjm4",
+        "label": "coredns-7db6d8ff4d-4mjm4",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/coredns/coredns:v1.11.1",
+            "image": "registry.k8s.io/coredns/coredns:v1.11.1",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-coredns-7db6d8ff4d-4pxhf",
+        "label": "coredns-7db6d8ff4d-4pxhf",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/coredns/coredns:v1.11.1",
+            "image": "registry.k8s.io/coredns/coredns:v1.11.1",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-etcd-carakube-demo-control-plane",
+        "label": "etcd-carakube-demo-control-plane",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/etcd:3.5.12-0",
+            "image": "registry.k8s.io/etcd:3.5.12-0",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kindnet-7lnt6",
+        "label": "kindnet-7lnt6",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: docker.io/kindest/kindnetd:v20240202-8f1494ea",
+            "image": "docker.io/kindest/kindnetd:v20240202-8f1494ea",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kindnet-9449g",
+        "label": "kindnet-9449g",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: docker.io/kindest/kindnetd:v20240202-8f1494ea",
+            "image": "docker.io/kindest/kindnetd:v20240202-8f1494ea",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kube-apiserver-carakube-demo-control-plane",
+        "label": "kube-apiserver-carakube-demo-control-plane",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/kube-apiserver:v1.30.0",
+            "image": "registry.k8s.io/kube-apiserver:v1.30.0",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kube-controller-manager-carakube-demo-control-plane",
+        "label": "kube-controller-manager-carakube-demo-control-plane",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/kube-controller-manager:v1.30.0",
+            "image": "registry.k8s.io/kube-controller-manager:v1.30.0",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kube-proxy-kxgmc",
+        "label": "kube-proxy-kxgmc",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/kube-proxy:v1.30.0",
+            "image": "registry.k8s.io/kube-proxy:v1.30.0",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kube-proxy-n4fqp",
+        "label": "kube-proxy-n4fqp",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/kube-proxy:v1.30.0",
+            "image": "registry.k8s.io/kube-proxy:v1.30.0",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-kube-system-kube-scheduler-carakube-demo-control-plane",
+        "label": "kube-scheduler-carakube-demo-control-plane",
+        "type": "pod",
+        "namespace": "kube-system",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: registry.k8s.io/kube-scheduler:v1.30.0",
+            "image": "registry.k8s.io/kube-scheduler:v1.30.0",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "pod-local-path-storage-local-path-provisioner-988d74bc-qlkkp",
+        "label": "local-path-provisioner-988d74bc-qlkkp",
+        "type": "pod",
+        "namespace": "local-path-storage",
+        "status": "running",
+        "vulnerabilities": [
+          {
+            "type": "workload",
+            "severity": "medium",
+            "title": "Environment variables in deployment",
+            "container": "local-path-provisioner",
+            "env_vars": [
+              {
+                "name": "POD_NAMESPACE",
+                "value": null,
+                "value_from": "{'config_map_key_ref': None,\n 'field_ref': {'api_version': 'v1', 'field_path': 'metadata.namespace'},\n 'file_key_ref': None,\n 'resource_field_ref': None,\n 'secret_key_ref': None}"
+              }
+            ]
+          },
+          {
+            "type": "image",
+            "severity": "info",
+            "title": "Container image: docker.io/kindest/local-path-provisioner:v20240202-8f1494ea",
+            "image": "docker.io/kindest/local-path-provisioner:v20240202-8f1494ea",
+            "pull_policy": "IfNotPresent"
+          }
+        ]
+      },
+      {
+        "id": "svc-default-hello-8010",
+        "label": "hello-8010",
+        "type": "service",
+        "namespace": "default",
+        "status": "NodePort",
+        "vulnerabilities": []
+      },
+      {
+        "id": "svc-default-kubernetes",
+        "label": "kubernetes",
+        "type": "service",
+        "namespace": "default",
+        "status": "ClusterIP",
+        "vulnerabilities": []
+      },
+      {
+        "id": "svc-default-podinfo",
+        "label": "podinfo",
+        "type": "service",
+        "namespace": "default",
+        "status": "ClusterIP",
+        "vulnerabilities": []
+      },
+      {
+        "id": "svc-flux-system-notification-controller",
+        "label": "notification-controller",
+        "type": "service",
+        "namespace": "flux-system",
+        "status": "ClusterIP",
+        "vulnerabilities": []
+      },
+      {
+        "id": "svc-flux-system-source-controller",
+        "label": "source-controller",
+        "type": "service",
+        "namespace": "flux-system",
+        "status": "ClusterIP",
+        "vulnerabilities": []
+      },
+      {
+        "id": "svc-flux-system-webhook-receiver",
+        "label": "webhook-receiver",
+        "type": "service",
+        "namespace": "flux-system",
+        "status": "ClusterIP",
+        "vulnerabilities": []
+      },
+      {
+        "id": "svc-kube-system-kube-dns",
+        "label": "kube-dns",
+        "type": "service",
+        "namespace": "kube-system",
+        "status": "ClusterIP",
+        "vulnerabilities": []
+      }
+    ],
+    "links": [
+      {
+        "source": "ns-default",
+        "target": "pod-default-hello-8010-946df65d5-zg7lq",
+        "type": "contains"
+      },
+      {
+        "source": "ns-default",
+        "target": "pod-default-podinfo-b76f6cd59-8rtvg",
+        "type": "contains"
+      },
+      {
+        "source": "ns-default",
+        "target": "pod-default-podinfo-b76f6cd59-nddsp",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "pod-flux-system-helm-controller-cccd949cd-2fq5q",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "pod-flux-system-kustomize-controller-789f6ccd67-gh8b6",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "pod-flux-system-notification-controller-59f4c9bdc5-rdgqr",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "pod-flux-system-source-controller-57d9795c86-tb2bx",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-coredns-7db6d8ff4d-4mjm4",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-coredns-7db6d8ff4d-4pxhf",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-etcd-carakube-demo-control-plane",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kindnet-7lnt6",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kindnet-9449g",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kube-apiserver-carakube-demo-control-plane",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kube-controller-manager-carakube-demo-control-plane",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kube-proxy-kxgmc",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kube-proxy-n4fqp",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "pod-kube-system-kube-scheduler-carakube-demo-control-plane",
+        "type": "contains"
+      },
+      {
+        "source": "ns-local-path-storage",
+        "target": "pod-local-path-storage-local-path-provisioner-988d74bc-qlkkp",
+        "type": "contains"
+      },
+      {
+        "source": "ns-default",
+        "target": "svc-default-hello-8010",
+        "type": "contains"
+      },
+      {
+        "source": "ns-default",
+        "target": "svc-default-kubernetes",
+        "type": "contains"
+      },
+      {
+        "source": "ns-default",
+        "target": "svc-default-podinfo",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "svc-flux-system-notification-controller",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "svc-flux-system-source-controller",
+        "type": "contains"
+      },
+      {
+        "source": "ns-flux-system",
+        "target": "svc-flux-system-webhook-receiver",
+        "type": "contains"
+      },
+      {
+        "source": "ns-kube-system",
+        "target": "svc-kube-system-kube-dns",
+        "type": "contains"
+      },
+      {
+        "source": "pod-default-hello-8010-946df65d5-zg7lq",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-default-podinfo-b76f6cd59-8rtvg",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-default-podinfo-b76f6cd59-nddsp",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-flux-system-helm-controller-cccd949cd-2fq5q",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-flux-system-kustomize-controller-789f6ccd67-gh8b6",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-flux-system-notification-controller-59f4c9bdc5-rdgqr",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-flux-system-source-controller-57d9795c86-tb2bx",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-coredns-7db6d8ff4d-4mjm4",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-coredns-7db6d8ff4d-4pxhf",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-etcd-carakube-demo-control-plane",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kindnet-7lnt6",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kindnet-9449g",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kube-apiserver-carakube-demo-control-plane",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kube-controller-manager-carakube-demo-control-plane",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kube-proxy-kxgmc",
+        "target": "node-carakube-demo-worker",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kube-proxy-n4fqp",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-kube-system-kube-scheduler-carakube-demo-control-plane",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "pod-local-path-storage-local-path-provisioner-988d74bc-qlkkp",
+        "target": "node-carakube-demo-control-plane",
+        "type": "runs-on"
+      },
+      {
+        "source": "svc-default-hello-8010",
+        "target": "pod-default-hello-8010-946df65d5-zg7lq",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-default-podinfo",
+        "target": "pod-default-podinfo-b76f6cd59-8rtvg",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-default-podinfo",
+        "target": "pod-default-podinfo-b76f6cd59-nddsp",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-flux-system-notification-controller",
+        "target": "pod-flux-system-notification-controller-59f4c9bdc5-rdgqr",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-flux-system-source-controller",
+        "target": "pod-flux-system-source-controller-57d9795c86-tb2bx",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-flux-system-webhook-receiver",
+        "target": "pod-flux-system-notification-controller-59f4c9bdc5-rdgqr",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-kube-system-kube-dns",
+        "target": "pod-kube-system-coredns-7db6d8ff4d-4mjm4",
+        "type": "exposes"
+      },
+      {
+        "source": "svc-kube-system-kube-dns",
+        "target": "pod-kube-system-coredns-7db6d8ff4d-4pxhf",
+        "type": "exposes"
+      }
+    ],
+    "stats": {
+      "total_nodes": 33,
+      "total_links": 51,
+      "node_types": {
+        "namespace": 6,
+        "node": 2,
+        "pod": 18,
+        "service": 7
+      },
+      "link_types": {
+        "contains": 25,
+        "runs-on": 18,
+        "exposes": 8
+      }
+    }
+  }
+}

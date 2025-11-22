@@ -1,11 +1,22 @@
 import React, { memo } from "react";
 import type { NodeProps } from "reactflow";
 import { Handle, Position } from "reactflow";
+import type { NodeData } from "@/store/graph";
 import styles from "./GraphNode.module.css";
 
-const GraphNode: React.FC<NodeProps> = ({ data }) => {
+const typeToColor = {
+  namespace: "1px solid black",
+  node: "2px solid var(--carakube-3)",
+  pod: "3px solid var(--carakube-6)",
+  service: "4px solid var(--carakube-9)",
+};
+
+const GraphNode: React.FC<NodeProps<NodeData>> = ({ data }) => {
   return (
-    <div className={styles.node}>
+    <div
+      className={styles.node}
+      style={{ border: data.apiType ? typeToColor[data.apiType] : "inherit" }}
+    >
       {data.label}
 
       <Handle

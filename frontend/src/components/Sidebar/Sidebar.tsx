@@ -25,9 +25,9 @@ export const Sidebar = () => {
 
   // const sortedIncidents = [...incidents].sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
 
-  const criticals = incidents.filter((i) => i.level === "critical");
-  const highs = incidents.filter((i) => i.level === "high");
-  const mediums = incidents.filter((i) => i.level === "medium");
+  const criticals = incidents.filter((i) => i.severity === "critical");
+  const highs = incidents.filter((i) => i.severity === "high");
+  const mediums = incidents.filter((i) => i.severity === "medium");
 
   if (!isOpen) {
     return (
