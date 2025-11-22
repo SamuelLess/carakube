@@ -204,10 +204,8 @@ ci: ## Run all CI checks (backend: lint + test + vulture, frontend: eslint + typ
 	@cd operator && uv run vulture scanner/ main.py --min-confidence 80 || true
 	@echo ""
 	@echo "$(YELLOW)Frontend Checks...$(NC)"
-	@echo "  → ESLint..."
-	@cd frontend && pnpm exec eslint src/ e2e/ playwright.config.ts
-	@echo "  → Type checking..."
-	@cd frontend && pnpm exec tsc --noEmit
+	@echo "  → Running pnpm lint (ESLint + TypeCheck)..."
+	@cd frontend && pnpm run lint
 	@echo "  → Prettier format check..."
 	@cd frontend && pnpm exec prettier --check src/ e2e/ playwright.config.ts
 	@echo ""

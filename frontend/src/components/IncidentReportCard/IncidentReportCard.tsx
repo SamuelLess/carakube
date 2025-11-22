@@ -41,7 +41,7 @@ export const IncidentReportCard = ({ incident, onClick }: IncidentReportCardProp
 
   const handleClick = () => {
     if (onClick) {
-      onClick(incident.id);
+      onClick(incident.nodeId);
     }
   };
 

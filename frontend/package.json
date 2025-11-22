@@ -18,12 +18,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "lint-staged": {
-    "*.{css,md,json,html}": "prettier --write",
-    "*.{js,jsx,ts,tsx}": [
-      "eslint ",
-      "prettier --write"
-    ],
-    "*.{ts,tsx}": "bash -c 'pnpm exec tsc --noEmit'"
+    "*.{css,md,json,html,js,jsx,ts,tsx}": "prettier --write"
   },
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",
