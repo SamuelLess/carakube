@@ -48,6 +48,15 @@ services:
       - kubeconfig-data:/root/.kube
     networks:
       - carakube-net
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.demo-secure.rule=Host(`demo-deployment.carakube.dev`)"
+      - "traefik.http.routers.demo-secure.entrypoints=websecure"
+      - "traefik.http.routers.demo-secure.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.demo-secure.service=demo-service"
+      - "traefik.http.services.demo-service.loadbalancer.server.port=8010"
 
   operator:
     build:
