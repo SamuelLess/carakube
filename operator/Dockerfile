@@ -1,7 +1,7 @@
 FROM python:3.11-slim
 
 # Install dependencies
-RUN apt-get update && apt-get install -y curl supervisor
+RUN apt-get update && apt-get install -y curl supervisor git
 
 # Install kubectl
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
@@ -15,6 +15,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY main.py .
 COPY scanner/ scanner/
+COPY autofix/ autofix/
 
 # Install dependencies from uv.lock
 RUN uv sync --frozen --no-dev
