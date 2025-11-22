@@ -11,6 +11,7 @@
   display: flex;
   flex-direction: column;
   border-left: 1px solid #e0e0e0;
+  overflow: visible;
 }
 
 .collapsedSidebar {
@@ -47,6 +48,7 @@
 .content {
   flex-grow: 1;
   overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 .footer::after {
@@ -106,4 +108,69 @@
   padding: 2px 5px;
   font-size: 10px;
   font-family: var(--font-jetbrains);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filterNotice {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+.emptyState {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.vulnerabilitySection {
+  animation: slideInUp 0.3s ease-out;
+  animation-fill-mode: both;
+}
+
+.vulnerabilitySection:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.vulnerabilitySection:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.vulnerabilitySection:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.vulnerabilitySection:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.vulnerabilitySection:nth-child(5) {
+  animation-delay: 0.25s;
 }

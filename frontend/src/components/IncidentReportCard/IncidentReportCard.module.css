@@ -66,4 +66,16 @@
   text-decoration: none;
   font-family: var(--font-ibm);
   font-weight: 500;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.prLink:hover {
+  background-color: #0a6d3c;
+  transform: scale(1.02);
+}
+
+.prLink:active {
+  transform: scale(0.98);
 }

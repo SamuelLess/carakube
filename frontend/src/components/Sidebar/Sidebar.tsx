@@ -79,52 +79,55 @@ export const Sidebar = () => {
 
   return (
     <div className={styles.sidebar}>
-      <div className={styles.content}>
-        {selectedNodeId && (
-          <div
-            className={styles.filterNotice}
+      {selectedNodeId && (
+        <div
+          key="filter-notice"
+          className={styles.filterNotice}
+          style={{
+            padding: "0.75rem 1rem",
+            background: "var(--carakube-6)",
+            color: "white",
+            borderRadius: "6px",
+            marginBottom: "1rem",
+            fontSize: "0.9rem",
+            fontWeight: 500,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "0.5rem",
+          }}
+        >
+          <span>Filtering vulnerabilities for selected node</span>
+          <button
+            onClick={() => setSelectedNodeId(null)}
             style={{
-              padding: "0.75rem 1rem",
-              background: "var(--carakube-6)",
+              background: "transparent",
+              border: "none",
               color: "white",
-              borderRadius: "6px",
-              marginBottom: "1rem",
-              fontSize: "0.9rem",
-              fontWeight: 500,
+              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              gap: "0.5rem",
+              padding: "0.25rem",
+              borderRadius: "4px",
+              transition: "background 0.2s",
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+            }}
+            title="Clear filter"
           >
-            <span>Filtering vulnerabilities for selected node</span>
-            <button
-              onClick={() => setSelectedNodeId(null)}
-              style={{
-                background: "transparent",
-                border: "none",
-                color: "white",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                padding: "0.25rem",
-                borderRadius: "4px",
-                transition: "background 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "transparent";
-              }}
-              title="Clear filter"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        )}
+            <X size={18} />
+          </button>
+        </div>
+      )}
+      <div className={styles.content}>
         {selectedNodeId && filteredIncidents.length === 0 && (
           <div
+            key="empty-state"
+            className={styles.emptyState}
             style={{
               padding: "2rem 1rem",
               textAlign: "center",
@@ -137,7 +140,7 @@ export const Sidebar = () => {
           </div>
         )}
         {criticals.length ? (
-          <div className={styles.header}>
+          <div className={`${styles.header} ${styles.vulnerabilitySection}`} key="criticals">
             <div className={styles.title}>Critical Vulnerabilities</div>
             {criticals.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
@@ -145,7 +148,7 @@ export const Sidebar = () => {
           </div>
         ) : null}
         {highs.length ? (
-          <div className={styles.header}>
+          <div className={`${styles.header} ${styles.vulnerabilitySection}`} key="highs">
             <div className={styles.title}>High Vulnerabilities</div>
             {highs.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
@@ -153,7 +156,7 @@ export const Sidebar = () => {
           </div>
         ) : null}
         {mediums.length ? (
-          <div className={styles.header}>
+          <div className={`${styles.header} ${styles.vulnerabilitySection}`} key="mediums">
             <div className={styles.title}>Medium Vulnerabilities</div>
             {mediums.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
@@ -161,7 +164,7 @@ export const Sidebar = () => {
           </div>
         ) : null}
         {low.length ? (
-          <div className={styles.header}>
+          <div className={`${styles.header} ${styles.vulnerabilitySection}`} key="low">
             <div className={styles.title}>Low Vulnerabilities</div>
             {low.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
@@ -169,7 +172,7 @@ export const Sidebar = () => {
           </div>
         ) : null}
         {info.length ? (
-          <div className={styles.header}>
+          <div className={`${styles.header} ${styles.vulnerabilitySection}`} key="info">
             <div className={styles.title}>Information</div>
             {info.map((incident, index) => (
               <IncidentReportCard key={index} incident={incident} />
