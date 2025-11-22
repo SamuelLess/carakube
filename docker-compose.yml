@@ -49,3 +49,4 @@ volumes:
 
 networks:
   traefik-proxy:
+    name: traefik-proxy
