@@ -25,7 +25,7 @@ services:
       - "traefik.docker.network=traefik-proxy"
 
       # Define the router that handles HTTPS traffic for both www and non-www domains.
-      - "traefik.http.routers.app-secure.rule=Host(`carakube.dev`) || Host(`91.99.199.216`)"
+      - "traefik.http.routers.app-secure.rule=Host(`carakube.dev`) || Host(`www.carakube.dev`)"
       - "traefik.http.routers.app-secure.entrypoints=websecure"
       - "traefik.http.routers.app-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.app-secure.service=app-service"
@@ -52,7 +52,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik-proxy"
-      - "traefik.http.routers.demo-secure.rule=Host(`demo-deployment.carakube.dev`) || Host(`91.99.199.216`)"
+      - "traefik.http.routers.demo-secure.rule=Host(`demo-deployment.carakube.dev`) || Host(`demo.carakube.dev`)"
       - "traefik.http.routers.demo-secure.entrypoints=websecure"
       - "traefik.http.routers.demo-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.demo-secure.service=demo-service"
