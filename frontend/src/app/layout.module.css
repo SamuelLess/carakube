@@ -1,16 +1,8 @@
-.container {
-  display: flex;
-  min-height: 100vh;
-}
-
 .main {
-  flex: 1;
-  margin-left: 240px;
-  transition: margin-left 0.2s ease-in-out;
+  padding-right: 50px;
+  transition: padding-right 0.3s ease;
 }
 
-@media (max-width: 768px) {
-  .main {
-    margin-left: 72px;
-  }
+body:not(.sidebar-closed) .main {
+  padding-right: 350px;
 }

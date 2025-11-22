@@ -47,11 +47,7 @@ const sampleTree: TreeData = {
 };
 
 const Home = () => {
-  return (
-    <main>
-      <TreeGraph tree={sampleTree} />
-    </main>
-  );
+  return <TreeGraph tree={sampleTree} />;
 };
 
 export default Home;

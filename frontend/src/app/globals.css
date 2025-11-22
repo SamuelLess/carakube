@@ -1,3 +1,16 @@
+:root {
+  --carakube-1: #ebf9ff;
+  --carakube-2: #d3efff;
+  --carakube-3: #b0e3ff;
+  --carakube-4: #7ad5ff;
+  --carakube-5: #3cb9ff;
+  --carakube-6: #0f95ff;
+  --carakube-7: #0072ff;
+  --carakube-8: #0059ff;
+  --carakube-9: #0048d1;
+  --carakube-10: #092862;
+}
+
 /* Make all interactive Radix components show pointer cursor */
 .rt-Button,
 .rt-IconButton,
