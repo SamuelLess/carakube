@@ -5,6 +5,7 @@ from pathlib import Path
 
 app = FastAPI(title="Carakube Operator API")
 SCANNER_OUTPUT_FILE = Path("/app/scanner_output/cluster_status.json")
+GRAPH_OUTPUT_FILE = Path("/app/scanner_output/cluster_graph.json")
 
 @app.get("/health")
 async def health():
@@ -31,6 +32,19 @@ async def cluster_status():
             return {"status": "success", "data": data}
         else:
             return {"status": "no_data", "message": "No scan data available yet"}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.get("/api/graph")
+async def get_graph():
+    """Get cluster topology graph with nodes and links"""
+    try:
+        if GRAPH_OUTPUT_FILE.exists():
+            with open(GRAPH_OUTPUT_FILE, "r") as f:
+                data = json.load(f)
+            return {"status": "success", "data": data}
+        else:
+            return {"status": "no_data", "message": "No graph data available yet"}
     except Exception as e:
         return {"status": "error", "error": str(e)}
 

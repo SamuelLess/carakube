@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from kubernetes import client, config, watch
 from kubernetes.client.rest import ApiException
+from typing import Any, Dict, Optional
 
 
 class ClusterScanner:
@@ -14,6 +15,7 @@ class ClusterScanner:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.output_file = self.output_dir / "cluster_status.json"
+        self.graph_file = self.output_dir / "cluster_graph.json"
         self._init_k8s_clients()
     
     def _init_k8s_clients(self):
@@ -271,6 +273,22 @@ class ClusterScanner:
         }
         return scan_result
     
+    def scan_topology(self) -> Dict[str, Any]:
+        """Scan cluster topology and build graph"""
+        try:
+            from .graph_builder import ClusterGraphBuilder
+            builder = ClusterGraphBuilder(self)
+            graph = builder.build_graph()
+            return graph
+        except Exception as e:
+            print(f"❌ Error scanning topology: {e}", flush=True)
+            return {
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                "nodes": [],
+                "links": [],
+                "error": str(e)
+            }
+    
     def save_scan(self, scan_data: dict) -> bool:
         """Save scan result to JSON file"""
         try:
@@ -282,8 +300,24 @@ class ClusterScanner:
             print(f"❌ Error saving scan: {e}", flush=True)
             return False
     
+    def save_graph(self, graph_data: dict) -> bool:
+        """Save graph result to JSON file"""
+        try:
+            with open(self.graph_file, "w") as f:
+                json.dump(graph_data, f, indent=2)
+            print(f"✅ Graph saved to {self.graph_file}", flush=True)
+            return True
+        except Exception as e:
+            print(f"❌ Error saving graph: {e}", flush=True)
+            return False
+    
     def run_and_save(self) -> dict:
         """Run scan and save result"""
         scan_data = self.scan()
         self.save_scan(scan_data)
+        
+        # Also run topology scan
+        graph_data = self.scan_topology()
+        self.save_graph(graph_data)
+        
         return scan_data
