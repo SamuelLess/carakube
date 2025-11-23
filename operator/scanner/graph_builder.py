@@ -688,8 +688,17 @@ class ClusterGraphBuilder:
             "stats": {
                 "total_nodes": len(self.nodes),
                 "total_links": len(self.links),
-                "node_types": self._count_by_type(self.nodes),
-                "link_types": self._count_by_type(self.links, "type"),
+                "node_types": {
+                    "namespace": self._count_by_type(self.nodes).get("namespace", 0),
+                    "node": self._count_by_type(self.nodes).get("node", 0),
+                    "pod": self._count_by_type(self.nodes).get("pod", 0),
+                    "service": self._count_by_type(self.nodes).get("service", 0),
+                },
+                "link_types": {
+                    "contains": self._count_by_type(self.links, "type").get("contains", 0),
+                    "runs-on": self._count_by_type(self.links, "type").get("runs-on", 0),
+                    "exposes": self._count_by_type(self.links, "type").get("exposes", 0),
+                },
             }
         }
 
@@ -842,12 +851,16 @@ class ClusterGraphBuilder:
         rbac_wildcards = scans.get("rbac_wildcards", {}).get("findings", [])
         for finding in rbac_wildcards:
             # ClusterRoles are cluster-wide but we show them in each namespace
-            for rule in finding.get("dangerous_rules", []):
+            for idx, rule in enumerate(finding.get("dangerous_rules", [])):
                 role_name = finding.get("role_name")
+                rule_desc = rule.get("description", "")
+                # Include rule index and description to make each rule unique
                 vuln_id = self._generate_vulnerability_id(
                     vuln_type="rbac_wildcard",
                     namespace=namespace,
-                    role_name=role_name
+                    role_name=role_name,
+                    rule_index=str(idx),
+                    rule_desc=rule_desc
                 )
                 vulnerabilities.append({
                     "id": vuln_id,

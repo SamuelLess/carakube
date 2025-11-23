@@ -7,12 +7,24 @@ import tempfile
 import shutil
 import os
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 import google.generativeai as genai
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    before_sleep_log,
+)
 
 from .git_operations import commit_and_push_changes, create_pull_request
+
+# Setup logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 REPO_URL = "https://github.com/SamuelLess/hackatum-k8s-flux.git"
@@ -113,9 +125,18 @@ def build_context_string(files: List[Tuple[str, str]]) -> str:
     return "\n".join(context_parts)
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((Exception,)),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
 def call_gemini_for_patch(context: str, vulnerability: Dict[str, Any], node_info: Dict[str, Any]) -> str:
     """
     Call Gemini 2.0 Flash API to generate a patch file for the vulnerability.
+    Retries up to 3 times with exponential backoff.
+    Uses structured output to ensure valid patch format.
     
     Args:
         context: The concatenated file context
@@ -124,7 +145,13 @@ def call_gemini_for_patch(context: str, vulnerability: Dict[str, Any], node_info
         
     Returns:
         Generated patch file content
+        
+    Raises:
+        ValueError: If API key is not set or patch is invalid
+        Exception: If patch generation fails after retries
     """
+    logger.info(f"[AUTOFIX] Calling Gemini API for vulnerability: {vulnerability.get('id', 'unknown')}")
+    
     # Get API key from environment
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
@@ -132,41 +159,108 @@ def call_gemini_for_patch(context: str, vulnerability: Dict[str, Any], node_info
     
     # Configure Gemini
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-2.5-flash-lite')
+    
+    # Use structured output schema to force valid patch format
+    model = genai.GenerativeModel(
+        'gemini-2.0-flash-exp',
+        generation_config={
+            "response_mime_type": "application/json",
+            "response_schema": {
+                "type": "object",
+                "properties": {
+                    "patch": {
+                        "type": "string",
+                        "description": "A valid unified diff patch that can be applied with 'patch -p1'. Must start with '---' and contain '+++' and '@@' markers."
+                    },
+                    "file_path": {
+                        "type": "string",
+                        "description": "The relative path to the file being patched"
+                    },
+                    "summary": {
+                        "type": "string",
+                        "description": "Brief one-line summary of the fix"
+                    }
+                },
+                "required": ["patch", "file_path", "summary"]
+            }
+        }
+    )
     
     # Build the prompt
     vulnerability_info = json.dumps(vulnerability, indent=2)
     node_info_str = json.dumps(node_info, indent=2) if node_info else "N/A"
     
-    prompt = f"""You are a security expert tasked with fixing vulnerabilities in Kubernetes manifests.
+    prompt = f"""You are a security expert fixing Kubernetes vulnerabilities.
 
-VULNERABILITY INFORMATION:
+VULNERABILITY:
 {vulnerability_info}
 
-NODE INFORMATION:
+NODE:
 {node_info_str}
 
-REPOSITORY FILES (files < 5KB):
+REPOSITORY FILES:
 {context}
 
-TASK:
-Analyze the vulnerability and the repository files, then generate a unified diff patch file that fixes the vulnerability.
-The patch should follow the standard unified diff format that can be applied with the 'patch' command.
+TASK: Generate a unified diff patch to fix this vulnerability.
 
-REQUIREMENTS:
-1. Generate ONLY the patch file content - no explanations or markdown formatting
-2. Use unified diff format (--- and +++ headers, @@ hunks)
-3. Make minimal changes necessary to fix the vulnerability
-4. Ensure the patch is syntactically correct and can be applied
-5. If the vulnerability involves image versions, security contexts, resource limits, or similar Kubernetes configurations, update them appropriately
-6. Start your response with the patch content directly
+RULES:
+1. Output ONLY valid unified diff format (use --- and +++ headers, @@ hunks)
+2. Make MINIMAL changes - only what's needed to fix the vulnerability
+3. NO comments, NO explanations - pure patch content only
+4. For RBAC wildcards: replace "*" with specific resource names (e.g., "customresourcedefinitions.apiextensions.k8s.io")
+5. For resource limits: add CPU/memory limits to containers
+6. For security: add runAsNonRoot, capabilities, securityContext
+7. Ensure YAML indentation is EXACT and correct
 
-Generate the patch now:"""
+EXAMPLES:
+RBAC fix: Change "resources: ['*']" to "resources: ['customresourcedefinitions']"
+Limits fix: Add "resources: {{limits: {{cpu: '100m', memory: '128Mi'}}}}"
+
+Generate the patch:"""
 
     # Call Gemini API
     response = model.generate_content(prompt)
     
-    return response.text
+    # Parse JSON response
+    try:
+        result = json.loads(response.text)
+        patch_content = result.get("patch", "")
+        file_path = result.get("file_path", "unknown")
+        summary = result.get("summary", "")
+        
+        logger.info(f"[AUTOFIX] Received patch for file: {file_path}")
+        logger.info(f"[AUTOFIX] Summary: {summary}")
+        logger.info(f"[AUTOFIX] Patch size: {len(patch_content)} chars")
+    except json.JSONDecodeError as e:
+        logger.error(f"[AUTOFIX] Failed to parse structured output: {e}")
+        logger.error(f"[AUTOFIX] Raw response: {response.text[:500]}")
+        raise ValueError(f"Gemini returned invalid JSON: {e}")
+    
+    if not patch_content:
+        raise ValueError("Gemini returned empty patch")
+    
+    # Validate and clean patch
+    patch_content = patch_content.strip()
+    
+    logger.info(f"[AUTOFIX] Received patch from Gemini ({len(patch_content)} chars)")
+    
+    # Validate patch has required components (these checks will now rarely fail due to structured output)
+    if not patch_content.startswith("---"):
+        logger.error(f"[AUTOFIX] Invalid patch start: {patch_content[:100]}")
+        raise ValueError("Generated patch doesn't start with --- (not a valid unified diff)")
+    
+    if "+++" not in patch_content:
+        raise ValueError("Generated patch missing +++ header (not a valid unified diff)")
+    
+    if "@@" not in patch_content:
+        raise ValueError("Generated patch missing @@ hunk markers (not a valid unified diff)")
+    
+    # Ensure patch ends with newline
+    if not patch_content.endswith("\n"):
+        patch_content += "\n"
+    
+    logger.info("[AUTOFIX] Patch validation passed")
+    return patch_content
 
 
 def apply_patch(repo_dir: Path, patch_content: str) -> None:

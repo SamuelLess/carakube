@@ -13,7 +13,7 @@ RUN pip install uv
 
 WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
-COPY main.py .
+COPY main.py vulnerability_state.py ./
 COPY scanner/ scanner/
 COPY autofix/ autofix/
 

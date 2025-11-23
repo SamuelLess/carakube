@@ -150,8 +150,12 @@ export const Sidebar = () => {
             key={`criticals-${selectedNodeId || "all"}`}
           >
             <div className={styles.title}>Critical Vulnerabilities</div>
-            {criticals.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
+            {criticals.map((incident) => (
+              <IncidentReportCard
+                key={incident.id || `${incident.nodeId}-${incident.type}`}
+                incident={incident}
+                onClick={handleIncidentClick}
+              />
             ))}
           </div>
         ) : null}
@@ -161,8 +165,12 @@ export const Sidebar = () => {
             key={`highs-${selectedNodeId || "all"}`}
           >
             <div className={styles.title}>High Vulnerabilities</div>
-            {highs.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
+            {highs.map((incident) => (
+              <IncidentReportCard
+                key={incident.id || `${incident.nodeId}-${incident.type}`}
+                incident={incident}
+                onClick={handleIncidentClick}
+              />
             ))}
           </div>
         ) : null}
@@ -172,8 +180,12 @@ export const Sidebar = () => {
             key={`mediums-${selectedNodeId || "all"}`}
           >
             <div className={styles.title}>Medium Vulnerabilities</div>
-            {mediums.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
+            {mediums.map((incident) => (
+              <IncidentReportCard
+                key={incident.id || `${incident.nodeId}-${incident.type}`}
+                incident={incident}
+                onClick={handleIncidentClick}
+              />
             ))}
           </div>
         ) : null}
@@ -183,8 +195,12 @@ export const Sidebar = () => {
             key={`low-${selectedNodeId || "all"}`}
           >
             <div className={styles.title}>Low Vulnerabilities</div>
-            {low.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
+            {low.map((incident) => (
+              <IncidentReportCard
+                key={incident.id || `${incident.nodeId}-${incident.type}`}
+                incident={incident}
+                onClick={handleIncidentClick}
+              />
             ))}
           </div>
         ) : null}
@@ -194,8 +210,12 @@ export const Sidebar = () => {
             key={`info-${selectedNodeId || "all"}`}
           >
             <div className={styles.title}>Information</div>
-            {info.map((incident, index) => (
-              <IncidentReportCard key={index} incident={incident} onClick={handleIncidentClick} />
+            {info.map((incident) => (
+              <IncidentReportCard
+                key={incident.id || `${incident.nodeId}-${incident.type}`}
+                incident={incident}
+                onClick={handleIncidentClick}
+              />
             ))}
           </div>
         ) : null}

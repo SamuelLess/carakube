@@ -57,7 +57,7 @@ echo "Kubernetes API is ready."
 # Install Flux controllers (idempotent)
 if ! kubectl get namespace flux-system >/dev/null 2>&1; then
   echo "Installing Flux into the cluster..."
-  flux install
+  flux install || echo "WARNING: Flux installation failed, continuing anyway..."
 else
   echo "Flux already installed."
 fi

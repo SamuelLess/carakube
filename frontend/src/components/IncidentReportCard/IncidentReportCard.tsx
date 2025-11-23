@@ -1,5 +1,8 @@
-import { AlertTriangle, GitPullRequest, Info, ShieldAlert } from "lucide-react";
+import { AlertTriangle, GitPullRequest, Info, Loader2, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { triggerVulnerabilityFix } from "@/lib/api";
 import type { VulnerabilityWithId } from "@/store/incidents";
+import { useVulnerabilityStatesStore } from "@/store/vulnerabilityStates";
 import styles from "./IncidentReportCard.module.css";
 
 interface IncidentReportCardProps {
@@ -36,12 +39,97 @@ const levelMapping = {
 };
 
 export const IncidentReportCard = ({ incident, onClick }: IncidentReportCardProps) => {
-  const { severity, title } = incident;
+  const { severity, title, id: vulnId } = incident;
   const { label, color, icon } = levelMapping[severity];
+
+  // Get just the state for THIS vulnerability
+  // Using a direct selector prevents unnecessary re-renders
+  const states = useVulnerabilityStatesStore((state) => state.states);
+  const setState = useVulnerabilityStatesStore((state) => state.setState);
+
+  // Get this specific vulnerability's state
+  const vulnState = states[vulnId] || {
+    state: "untouched" as const,
+    pr_url: null,
+    updated_at: null,
+  };
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Debug: log the vulnerability ID to ensure it's unique
+  if (!vulnId || vulnId === "undefined") {
+    console.error("IncidentReportCard: Missing or invalid vulnerability ID", incident);
+  }
 
   const handleClick = () => {
     if (onClick) {
       onClick(incident.nodeId);
+    }
+  };
+
+  const handleCreatePR = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (!vulnId) {
+      console.error("❌ Cannot create PR: vulnerability ID is missing");
+      return;
+    }
+
+    console.log(`🔵 [${vulnId}] Current state:`, vulnState);
+
+    if (vulnState.state !== "untouched") {
+      // If already processing or PR available, don't trigger again
+      console.log(`⏭️  [${vulnId}] Already ${vulnState.state}, skipping`);
+      return;
+    }
+
+    console.log(`🚀 [${vulnId}] Starting PR creation process`);
+    console.log(`📋 [${vulnId}] Vulnerability details:`, {
+      type: incident.type,
+      severity: incident.severity,
+      title: incident.title,
+      nodeId: incident.nodeId,
+    });
+    setIsLoading(true);
+
+    // Immediately update state to in_processing for THIS specific vulnerability
+    console.log(`⏳ [${vulnId}] Setting state to in_processing`);
+    setState(vulnId, {
+      state: "in_processing",
+      pr_url: null,
+      updated_at: new Date().toISOString(),
+    });
+
+    try {
+      console.log(`📡 [${vulnId}] Calling API to trigger fix...`);
+      const response = await triggerVulnerabilityFix(vulnId);
+      console.log(`📨 [${vulnId}] API response:`, response);
+
+      if (response.status === "success" && response.state) {
+        // Update state with response from backend
+        console.log(`✅ [${vulnId}] PR creation successful!`, response.state);
+        console.log(`🔗 [${vulnId}] PR URL:`, response.state.pr_url);
+        setState(vulnId, response.state);
+      } else {
+        // If failed, reset to untouched
+        console.error(`❌ [${vulnId}] PR creation failed:`, response.message);
+        setState(vulnId, {
+          state: "untouched",
+          pr_url: null,
+          updated_at: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      // If error, reset to untouched
+      console.error(`💥 [${vulnId}] Exception during PR creation:`, error);
+      setState(vulnId, {
+        state: "untouched",
+        pr_url: null,
+        updated_at: new Date().toISOString(),
+      });
+    } finally {
+      setIsLoading(false);
+      console.log(`🏁 [${vulnId}] PR creation process completed`);
     }
   };
 
@@ -83,6 +171,45 @@ export const IncidentReportCard = ({ incident, onClick }: IncidentReportCardProp
       return "Image Security";
     }
     return "Security";
+  };
+
+  // Render the appropriate button based on state
+  const renderActionButton = () => {
+    if (vulnState.state === "pr_available" && vulnState.pr_url) {
+      return (
+        <a
+          href={vulnState.pr_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.prLink}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GitPullRequest size={16} />
+          <span>View Fix PR</span>
+        </a>
+      );
+    }
+
+    if (vulnState.state === "in_processing" || isLoading) {
+      return (
+        <button
+          className={`${styles.prLink} ${styles.processing}`}
+          disabled
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Loader2 size={16} className={styles.spinner} />
+          <span>Processing...</span>
+        </button>
+      );
+    }
+
+    // Default: untouched state
+    return (
+      <button className={`${styles.prLink} ${styles.createButton}`} onClick={handleCreatePR}>
+        <GitPullRequest size={16} />
+        <span>Create PR</span>
+      </button>
+    );
   };
 
   return (
@@ -140,15 +267,7 @@ export const IncidentReportCard = ({ incident, onClick }: IncidentReportCardProp
         <div className={styles.header}>
           <h3 className={styles.title}>{title}</h3>
         </div>
-        <a
-          href={`https://github.com/`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.prLink}
-        >
-          <GitPullRequest size={16} />
-          <span>View Fix PR</span>
-        </a>
+        {renderActionButton()}
       </div>
     </div>
   );
