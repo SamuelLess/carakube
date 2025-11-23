@@ -206,7 +206,7 @@ class ClusterScanner:
                             "image": container.image,
                             "missing_limits": missing_limits,
                             "severity": severity,
-                            "description": f"Container missing resource limits: {', '.join(missing_limits)}"
+                            "description": f"Container missing resource limits: {', '.join(missing_limits)}. Possible DoS risk."
                         })
                 
                 if containers_without_limits:
