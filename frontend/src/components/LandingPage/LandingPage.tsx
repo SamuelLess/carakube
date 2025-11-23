@@ -371,7 +371,7 @@ export const LandingPage = () => {
           <div className={styles.techStack}>
             <div className={styles.stackItem}>
               <span className={styles.stackLabel}>Backend</span>
-              <span className={styles.stackValue}>Python 3.9+ • FastAPI • Kubernetes Client</span>
+              <span className={styles.stackValue}>Python 3.11+ • FastAPI • Kubernetes Client</span>
             </div>
             <div className={styles.stackItem}>
               <span className={styles.stackLabel}>Frontend</span>
@@ -381,7 +381,7 @@ export const LandingPage = () => {
             </div>
             <div className={styles.stackItem}>
               <span className={styles.stackLabel}>Infrastructure</span>
-              <span className={styles.stackValue}>Docker Compose • Traefik • Kind</span>
+              <span className={styles.stackValue}>Docker Compose • Traefik • Kind • Flux</span>
             </div>
           </div>
         </div>
