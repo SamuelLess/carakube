@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/carakube-logo.png" alt="CaraKube Logo" width="300"/>
 </p>
 
-## [CaraKube](https://carakube.dev) - Autonomous Kubernetes Security & Remediation
+## [CaraKube](https://carakube.dev) – Autonomous Kubernetes Security & Remediation
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/overview.png" alt="CaraKube Overview" width="800"/>
