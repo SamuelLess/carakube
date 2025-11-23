@@ -1,9 +1,13 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/carakube-logo.png" alt="CaraKube Logo" width="300"/>
 </p>
-<hr>
 
 ## [CaraKube](https://carakube.dev) - Autonomous Kubernetes Security & Remediation
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/overview.png" alt="CaraKube Overview" width="800"/>
+</p>
+
 Kubernetes security is overwhelming. Developers are stuck in "YAML hell," which creates critical vulnerabilities where misconfigurations hide in hundreds of files. Existing tools detect problems but require manual fixes that break GitOps workflows. We built CaraKube to autonomously solve this.
 
 **What it does**: CaraKube continuously monitors your cluster, detects security risks (privilege escalation, missing limits, exposed secrets), and autonomously fixes them. We developed an interactive React Flow dashboard visualizing cluster topology with color-coded health indicators. Click compromised nodes to view vulnerabilities and trigger auto-remediation.
@@ -14,13 +18,15 @@ Kubernetes security is overwhelming. Developers are stuck in "YAML hell," which 
 
 We transformed Kubernetes security from reactive firefighting into proactive, autonomous protection, empowering teams to maintain secure clusters without drowning in YAML.
 
-## Demo
+### Cluster at a glance
 
 ![Demo 0](https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/Demo%200.gif)
 
-![Demo 1](https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/Demo%201.gif)
-
-![Demo 2](https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/Demo%202.gif)
+### Agent-powered PR-creation
+<p align="center">
+  <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/Demo%201.gif" alt="Demo 1" width="30%" style="vertical-align: top;"/>
+  <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/Demo%202.gif" alt="Demo 2" width="68%" style="vertical-align: top;"/>
+</p>
 
 ---
 ## Try the live demo
@@ -29,4 +35,7 @@ We transformed Kubernetes security from reactive firefighting into proactive, au
   <img src="https://raw.githubusercontent.com/SamuelLess/carakube/refs/heads/main/docs/carakube-qr-code.png" alt="Demo QR Code" width="200"/>
 </p>
 
+<center>
+
 Scan the QR code or visit [carakube.dev](https://carakube.dev/) to access the live demo.
+</center>
