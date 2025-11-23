@@ -381,8 +381,23 @@ class ClusterScanner:
             cluster_roles = self.rbac_api.list_cluster_role()
             findings = []
             
-            # System roles to exclude (they are expected to be powerful)
-            excluded_roles = ["cluster-admin", "admin", "edit", "view"]
+            # System/managed roles to exclude (they are expected to be powerful)
+            excluded_roles = {
+                "cluster-admin",
+                "admin",
+                "edit",
+                "view",
+                # Flux controllers need wide permissions to reconcile manifests
+                "crd-controller-flux-system",
+                "kustomize-controller-flux-system",
+                "helm-controller-flux-system",
+                "notification-controller-flux-system",
+                "source-controller-flux-system",
+                "flux-view-flux-system",
+                "flux-read-flux-system",
+                "flux-edit-flux-system",
+                "local-path-provisioner-role",
+            }
             
             for role in cluster_roles.items:
                 role_name = role.metadata.name
@@ -535,6 +550,121 @@ class ClusterScanner:
         except Exception as e:
             return {"success": False, "error": str(e), "count": 0, "findings": []}
     
+   # ========== SCAN 7: SECRETS & MISCONFIGURATIONS ==========
+    def scan_secrets(self) -> dict:
+        """Detect exposed secrets, flags, and misconfigurations (CTF specific)"""
+        try:
+            findings = []
+            sensitive_keywords = ["password", "secret", "key", "token", "flag", "credential"]
+            
+            # 1. ConfigMaps (EASY)
+            configmaps = self.v1_api.list_config_map_for_all_namespaces()
+            for cm in configmaps.items:
+                if cm.metadata.namespace in ["kube-public", "kube-node-lease"]:
+                    continue
+                
+                if not cm.data:
+                    continue
+                    
+                for key, value in cm.data.items():
+                    if any(k in key.lower() for k in sensitive_keywords) or \
+                       any(k in str(value).lower() for k in sensitive_keywords):
+                        findings.append({
+                            "type": "exposed_secret_configmap",
+                            "severity": "high",
+                            "description": f"Potential secret/flag in ConfigMap: {key}",
+                            "resource": f"{cm.metadata.namespace}/configmap/{cm.metadata.name}"
+                        })
+
+            # 2. Pod EnvVars (EASY)
+            pods = self.v1_api.list_pod_for_all_namespaces()
+            for pod in pods.items:
+                if pod.metadata.namespace in ["kube-system", "kube-public"]:
+                    continue
+                    
+                if not pod.spec.containers:
+                    continue
+                    
+                for container in pod.spec.containers:
+                    if container.env:
+                        for env in container.env:
+                            if env.value and any(k in env.name.lower() for k in sensitive_keywords):
+                                findings.append({
+                                    "type": "exposed_secret_env",
+                                    "severity": "high",
+                                    "description": f"Potential secret in EnvVar: {env.name}",
+                                    "resource": f"{pod.metadata.namespace}/pod/{pod.metadata.name}"
+                                })
+                    
+                    # 3. Volumes (EASY)
+                    if pod.spec.volumes:
+                        for vol in pod.spec.volumes:
+                            if (vol.secret or vol.config_map) and \
+                               any(k in vol.name.lower() for k in sensitive_keywords):
+                                findings.append({
+                                    "type": "suspicious_volume",
+                                    "severity": "medium",
+                                    "description": f"Suspicious volume mount: {vol.name}",
+                                    "resource": f"{pod.metadata.namespace}/pod/{pod.metadata.name}"
+                                })
+
+            # 4. Secrets Analysis (EASY, MEDIUM, HARD)
+            secrets = self.v1_api.list_secret_for_all_namespaces()
+            for secret in secrets.items:
+                # EASY: Secrets in default namespace
+                if secret.metadata.namespace == "default" and secret.type == "Opaque":
+                    findings.append({
+                        "type": "secret_in_default",
+                        "severity": "medium",
+                        "description": "Opaque Secret found in default namespace",
+                        "resource": f"{secret.metadata.namespace}/secret/{secret.metadata.name}"
+                    })
+                
+                # MEDIUM: Private Keys (Token Forgery)
+                if secret.data:
+                    for key in secret.data.keys():
+                        if key.endswith(".key") or key.endswith(".pem") or key == "private.key":
+                            findings.append({
+                                "type": "private_key_exposed",
+                                "severity": "critical",
+                                "description": f"Private key found in Secret (potential token forgery): {key}",
+                                "resource": f"{secret.metadata.namespace}/secret/{secret.metadata.name}"
+                            })
+
+                # HARD: Secrets in kube-system
+                if secret.metadata.namespace == "kube-system":
+                    # Filter out system secrets
+                    is_system = (
+                        secret.type.startswith("kubernetes.io/") or 
+                        secret.metadata.name.startswith("default-token") or 
+                        secret.metadata.name.startswith("attachdetach") or
+                        secret.metadata.name.startswith("bootstrap-token")
+                    )
+                    if not is_system:
+                        findings.append({
+                            "type": "hidden_secret_kubesystem",
+                            "severity": "critical",
+                            "description": "Suspicious non-system Secret in kube-system",
+                            "resource": f"{secret.metadata.namespace}/secret/{secret.metadata.name}"
+                        })
+                
+                # EASY: Helm Values
+                if secret.type == "helm.sh/release.v1":
+                     findings.append({
+                        "type": "helm_release_secret",
+                        "severity": "low",
+                        "description": "Helm release secret accessible (may contain values)",
+                        "resource": f"{secret.metadata.namespace}/secret/{secret.metadata.name}"
+                    })
+
+            return {
+                "success": True,
+                "count": len(findings),
+                "findings": findings
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "count": 0, "findings": []}
+    
     def scan(self) -> dict:
         """Perform complete security scan"""
         scan_result = {
@@ -545,10 +675,12 @@ class ClusterScanner:
                 "serviceaccount_security": self.scan_serviceaccount_security(),
                 "network_exposure": self.scan_network_exposure(),
                 "rbac_wildcards": self.scan_rbac_wildcards(),
-                "image_security": self.scan_image_security()
+                "image_security": self.scan_image_security(),
+                "secrets_misconfigs": self.scan_secrets()
             }
         }
         return scan_result
+    
     
     def scan_topology(self, scan_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Scan cluster topology and build graph with vulnerability data"""

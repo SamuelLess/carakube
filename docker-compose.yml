@@ -12,6 +12,8 @@ services:
       - traefik-logs:/var/log/traefik
     networks:
       - traefik-proxy
+    security_opt:
+      - label:disable
 
   frontend:
     build:
@@ -42,6 +44,8 @@ services:
 
       # Define the service and its internal port.
       - "traefik.http.services.app-service.loadbalancer.server.port=3000"
+    security_opt:
+      - label:disable
 
   cluster:
     build:
@@ -60,6 +64,8 @@ services:
       - "traefik.http.routers.demo-secure.tls.certresolver=letsencrypt"
       - "traefik.http.routers.demo-secure.service=demo-service"
       - "traefik.http.services.demo-service.loadbalancer.server.port=8010"
+    security_opt:
+      - label:disable
 
   operator:
     build:
@@ -79,6 +85,8 @@ services:
     networks:
       - carakube-net
       - backend
+    security_opt:
+      - label:disable
 
 volumes:
   traefik-certs:
