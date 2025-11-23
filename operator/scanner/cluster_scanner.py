@@ -1,10 +1,16 @@
 """Cluster scanner module for monitoring Kubernetes cluster status"""
 import json
+import urllib3
 from datetime import datetime
 from pathlib import Path
 from kubernetes import client, config
 from kubernetes.client import CustomObjectsApi
 from typing import Any, Dict, Optional
+
+# Disable SSL warnings for internal cluster communication
+# The Kubernetes Python client uses the service account token and CA cert
+# from /var/run/secrets/kubernetes.io/serviceaccount/ for authentication
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class ClusterScanner:
@@ -17,7 +23,7 @@ class ClusterScanner:
         self._init_k8s_clients()
     
     def _init_k8s_clients(self):
-        """Initialize Kubernetes API clients"""
+        """Initialize Kubernetes API clients with proper SSL configuration"""
         try:
             config.load_incluster_config()
         except config.config_exception.ConfigException:

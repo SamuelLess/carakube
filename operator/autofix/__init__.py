@@ -108,18 +108,21 @@ def collect_small_files(repo_dir: Path, max_size_kb: int = 5) -> List[Tuple[str,
 
 def build_context_string(files: List[Tuple[str, str]]) -> str:
     """
-    Build a context string from collected files with file paths.
+    Build a context string from collected files with file paths and line numbers.
     
     Args:
         files: List of tuples containing (relative_path, file_content)
         
     Returns:
-        Formatted context string
+        Formatted context string with line numbers
     """
     context_parts = []
     for file_path, content in files:
         context_parts.append(f"=== FILE: {file_path} ===")
-        context_parts.append(content)
+        # Add line numbers to the content
+        lines = content.split('\n')
+        numbered_lines = [f"{i+1:4d} | {line}" for i, line in enumerate(lines)]
+        context_parts.append('\n'.join(numbered_lines))
         context_parts.append("")  # Empty line between files
     
     return "\n".join(context_parts)
@@ -162,7 +165,7 @@ def call_gemini_for_patch(context: str, vulnerability: Dict[str, Any], node_info
     
     # Use structured output schema to force valid patch format
     model = genai.GenerativeModel(
-        'gemini-2.0-flash-exp',
+        'gemini-2.5-flash',
         generation_config={
             "response_mime_type": "application/json",
             "response_schema": {
@@ -198,7 +201,10 @@ VULNERABILITY:
 NODE:
 {node_info_str}
 
-REPOSITORY FILES:
+REPOSITORY FILES (with line numbers):
+Note: Files are shown with line numbers in the format "LINE_NUMBER | content".
+Use these line numbers to understand the file structure and generate accurate patches.
+
 {context}
 
 TASK: Generate a unified diff patch to fix this vulnerability.
@@ -211,6 +217,7 @@ RULES:
 5. For resource limits: add CPU/memory limits to containers
 6. For security: add runAsNonRoot, capabilities, securityContext
 7. Ensure YAML indentation is EXACT and correct
+8. The line numbers shown are for reference - your patch should use standard unified diff format without line numbers
 
 EXAMPLES:
 RBAC fix: Change "resources: ['*']" to "resources: ['customresourcedefinitions']"
