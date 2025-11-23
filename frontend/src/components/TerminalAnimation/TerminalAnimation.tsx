@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from "./TerminalAnimation.module.css";
 
 interface Step {
@@ -41,6 +41,7 @@ export const TerminalAnimation = () => {
   const [visibleSteps, setVisibleSteps] = useState<number>(0);
   const [currentText, setCurrentText] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
+  const terminalBodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -89,6 +90,13 @@ export const TerminalAnimation = () => {
     };
   }, [visibleSteps, isTyping]);
 
+  // Auto-scroll to bottom when content changes
+  useEffect(() => {
+    if (terminalBodyRef.current) {
+      terminalBodyRef.current.scrollTop = terminalBodyRef.current.scrollHeight;
+    }
+  }, [visibleSteps, currentText, isTyping]);
+
   return (
     <div className={styles.terminal}>
       <div className={styles.terminalHeader}>
@@ -104,7 +112,7 @@ export const TerminalAnimation = () => {
         <div className={styles.terminalHeaderSpacer}></div>
       </div>
 
-      <div className={styles.terminalBody}>
+      <div className={styles.terminalBody} ref={terminalBodyRef}>
         {steps.slice(0, visibleSteps).map((step, index) => (
           <div key={index} className={styles.terminalLine}>
             {step.type === "command" && (

@@ -98,8 +98,7 @@
 
 .terminalBody {
   padding: 24px;
-  min-height: 400px;
-  max-height: 500px;
+  height: 350px;
   overflow-y: auto;
   background: #0d1117;
   position: relative;
@@ -211,7 +210,7 @@
 
   .terminalBody {
     padding: 16px;
-    min-height: 350px;
+    height: 350px;
     font-size: 0.85rem;
   }
 

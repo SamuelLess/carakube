@@ -1,6 +1,10 @@
 .landing {
   min-height: 100vh;
   background: #ffffff;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 /* Hero Section */
@@ -14,6 +18,8 @@
   max-width: 100%;
   padding: 0 32px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .heroContent {
@@ -34,6 +40,9 @@
   font-weight: 500;
   color: #374151;
   margin-bottom: 24px;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 
 .title {
@@ -60,6 +69,10 @@
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .cta {
@@ -121,6 +134,11 @@
   font-weight: 600;
   color: #1e40af;
   margin-bottom: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .installLabel svg {
@@ -134,6 +152,8 @@
   border-radius: 12px;
   max-width: 600px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .statusIndicator {
@@ -195,6 +215,9 @@
 .heroVisual {
   max-width: 900px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Features Section */
@@ -224,8 +247,10 @@
 
 .featureGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .featureCard {
@@ -234,6 +259,9 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   transition: all 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .featureCard:hover {
@@ -265,6 +293,8 @@
   line-height: 1.6;
   color: #6b7280;
   margin-bottom: 16px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .featureList {
@@ -300,6 +330,8 @@
   gap: 20px;
   flex-wrap: wrap;
   margin-bottom: 48px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .archStep {
@@ -311,6 +343,9 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .archNumber {
@@ -332,12 +367,16 @@
   font-weight: 600;
   margin-bottom: 6px;
   color: #111827;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .archStep p {
   font-size: 0.875rem;
   color: #6b7280;
   margin-bottom: 10px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .archStep code {
@@ -349,6 +388,9 @@
   font-size: 0.75rem;
   font-family: var(--font-jetbrains), monospace;
   color: #374151;
+  word-break: break-all;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .archArrow {
@@ -373,6 +415,9 @@
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .stackLabel {
@@ -387,6 +432,9 @@
   font-size: 0.875rem;
   color: #111827;
   font-family: var(--font-jetbrains), monospace;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 /* Pricing Section */
@@ -398,10 +446,12 @@
 
 .pricingGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
   max-width: 1000px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .pricingCard {
@@ -411,6 +461,9 @@
   border-radius: 12px;
   position: relative;
   transition: all 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .pricingCard:hover {
@@ -564,36 +617,294 @@
     padding: 64px 16px 48px;
   }
 
+  .container {
+    padding: 0 16px;
+  }
+
   .heroContent {
     margin-bottom: 48px;
+    padding: 0;
   }
 
   .title {
     font-size: 2rem;
+    padding: 0 8px;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 8px;
   }
 
   .cta {
     flex-direction: column;
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .primaryButton,
+  .secondaryButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .installLabel {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    text-align: center;
+  }
+
+  .liveStatus {
+    padding: 16px;
+    margin: 0 16px;
   }
 
   .metrics {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .metricValue {
+    font-size: 1.25rem;
+  }
+
+  .metricLabel {
+    font-size: 0.7rem;
+  }
+
+  .heroVisual {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 8px;
+  }
+
+  .features {
+    padding: 48px 16px;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+    padding: 0 16px;
+  }
+
+  .sectionSubtitle {
+    font-size: 1rem;
+    padding: 0 16px;
+  }
+
+  .featureGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .featureCard {
+    padding: 20px;
   }
 
   .archDiagram {
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .archStep {
+    min-width: 100%;
+    max-width: 100%;
+    padding: 16px;
   }
 
   .archArrow {
     transform: rotate(90deg);
+    margin: 8px 0;
+  }
+
+  .architecture {
+    padding: 48px 16px;
+  }
+
+  .techStack {
+    width: 100%;
   }
 
   .stackItem {
     grid-template-columns: 1fr;
     gap: 8px;
+    padding: 12px;
+  }
+
+  .stackLabel {
+    font-size: 0.8rem;
+  }
+
+  .stackValue {
+    font-size: 0.8rem;
+  }
+
+  .pricing {
+    padding: 48px 16px;
   }
 
   .pricingGrid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .pricingCard {
+    padding: 20px;
+  }
+
+  .cta {
+    padding: 48px 16px;
+  }
+
+  .ctaContent {
+    padding: 0 8px;
+  }
+
+  .ctaContent h2 {
+    font-size: 2rem;
+  }
+
+  .ctaContent p {
+    font-size: 1rem;
+  }
+
+  .ctaButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero {
+    padding: 48px 12px 32px;
+  }
+
+  .container {
+    padding: 0 12px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+    padding: 0 4px;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    padding: 0 4px;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    margin-bottom: 16px;
+  }
+
+  .installLabel {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  .liveStatus {
+    padding: 12px;
+    margin: 0 8px;
+  }
+
+  .metrics {
+    gap: 6px;
+    padding: 0 4px;
+  }
+
+  .metricValue {
+    font-size: 1.1rem;
+  }
+
+  .metricLabel {
+    font-size: 0.65rem;
+  }
+
+  .heroVisual {
+    padding: 0 4px;
+  }
+
+  .features {
+    padding: 32px 12px;
+  }
+
+  .sectionTitle {
+    font-size: 1.75rem;
+    padding: 0 8px;
+  }
+
+  .sectionSubtitle {
+    font-size: 0.9rem;
+    padding: 0 8px;
+    margin-bottom: 32px;
+  }
+
+  .featureCard {
+    padding: 16px;
+  }
+
+  .featureTitle {
+    font-size: 1.1rem;
+  }
+
+  .featureDescription {
+    font-size: 0.9rem;
+  }
+
+  .architecture {
+    padding: 32px 12px;
+  }
+
+  .archStep {
+    padding: 12px;
+  }
+
+  .archStep h4 {
+    font-size: 0.9rem;
+  }
+
+  .archStep p {
+    font-size: 0.8rem;
+  }
+
+  .archStep code {
+    font-size: 0.7rem;
+    padding: 3px 6px;
+  }
+
+  .pricing {
+    padding: 32px 12px;
+  }
+
+  .pricingCard {
+    padding: 16px;
+  }
+
+  .pricingHeader h3 {
+    font-size: 1.1rem;
+  }
+
+  .pricingFeatures li {
+    font-size: 0.8rem;
+    padding: 8px 0;
+  }
+
+  .cta {
+    padding: 32px 12px;
+  }
+
+  .ctaContent h2 {
+    font-size: 1.75rem;
+  }
+
+  .ctaContent p {
+    font-size: 0.9rem;
+  }
+
+  .ctaButton {
+    padding: 12px 24px;
+    font-size: 0.9rem;
   }
 }
