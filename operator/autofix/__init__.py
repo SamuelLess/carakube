@@ -30,6 +30,37 @@ logging.basicConfig(level=logging.INFO)
 REPO_URL = "https://github.com/SamuelLess/hackatum-k8s-flux.git"
 
 
+def get_gemini_model(response_schema: Dict[str, Any] = None) -> Any:
+    """
+    Create and configure a Gemini model instance.
+    
+    Args:
+        response_schema: Optional JSON schema for structured output
+        
+    Returns:
+        Configured GenerativeModel instance
+        
+    Raises:
+        ValueError: If API key is not set
+    """
+    # Get API key from environment
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY environment variable not set")
+    
+    # Configure Gemini
+    genai.configure(api_key=api_key)
+    
+    # Build configuration
+    config = {}
+    if response_schema:
+        config["response_mime_type"] = "application/json"
+        config["response_schema"] = response_schema
+    
+    # Create and return model
+    return genai.GenerativeModel('gemini-2.5-flash', generation_config=config if config else None)
+
+
 def clone_repo() -> Path:
     """
     Clone the repository into a temporary folder with timestamp.
@@ -155,39 +186,27 @@ def call_gemini_for_patch(context: str, vulnerability: Dict[str, Any], node_info
     """
     logger.info(f"[AUTOFIX] Calling Gemini API for vulnerability: {vulnerability.get('id', 'unknown')}")
     
-    # Get API key from environment
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise ValueError("GEMINI_API_KEY environment variable not set")
-    
-    # Configure Gemini
-    genai.configure(api_key=api_key)
-    
     # Use structured output schema to force valid patch format
-    model = genai.GenerativeModel(
-        'gemini-2.5-flash',
-        generation_config={
-            "response_mime_type": "application/json",
-            "response_schema": {
-                "type": "object",
-                "properties": {
-                    "patch": {
-                        "type": "string",
-                        "description": "A valid unified diff patch that can be applied with 'patch -p1'. Must start with '---' and contain '+++' and '@@' markers."
-                    },
-                    "file_path": {
-                        "type": "string",
-                        "description": "The relative path to the file being patched"
-                    },
-                    "summary": {
-                        "type": "string",
-                        "description": "Brief one-line summary of the fix"
-                    }
-                },
-                "required": ["patch", "file_path", "summary"]
+    patch_schema = {
+        "type": "object",
+        "properties": {
+            "patch": {
+                "type": "string",
+                "description": "A valid unified diff patch that can be applied with 'patch -p1'. Must start with '---' and contain '+++' and '@@' markers."
+            },
+            "file_path": {
+                "type": "string",
+                "description": "The relative path to the file being patched"
+            },
+            "summary": {
+                "type": "string",
+                "description": "Brief one-line summary of the fix"
             }
-        }
-    )
+        },
+        "required": ["patch", "file_path", "summary"]
+    }
+    
+    model = get_gemini_model(response_schema=patch_schema)
     
     # Build the prompt
     vulnerability_info = json.dumps(vulnerability, indent=2)
@@ -268,6 +287,132 @@ Generate the patch:"""
     
     logger.info("[AUTOFIX] Patch validation passed")
     return patch_content
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    retry=retry_if_exception_type((Exception,)),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+def generate_pr_description(patch_content: str, vulnerability: Dict[str, Any], node_info: Dict[str, Any]) -> str:
+    """
+    Generate a human-readable PR description explaining the vulnerability fix.
+    Uses Gemini to create a clear explanation of the issue and the solution.
+    Retries up to 3 times with exponential backoff.
+    
+    Args:
+        patch_content: The patch that was generated to fix the vulnerability
+        vulnerability: The vulnerability data
+        node_info: Information about the node where the vulnerability was found
+        
+    Returns:
+        Human-readable PR description
+        
+    Raises:
+        ValueError: If API key is not set
+        Exception: If description generation fails after retries
+    """
+    logger.info(f"[AUTOFIX] Generating PR description for vulnerability: {vulnerability.get('id', 'unknown')}")
+    
+    # Use structured output schema
+    description_schema = {
+        "type": "object",
+        "properties": {
+            "title": {
+                "type": "string",
+                "description": "A concise title summarizing the security fix"
+            },
+            "problem_explanation": {
+                "type": "string",
+                "description": "A clear explanation of why this was a security issue, written for humans. Should explain the risk and impact."
+            },
+            "fix_explanation": {
+                "type": "string",
+                "description": "A clear explanation of how the fix addresses the problem, written for humans. Should explain what changes were made and why they solve the issue."
+            },
+            "technical_details": {
+                "type": "string",
+                "description": "Technical details about the specific changes made in the patch"
+            }
+        },
+        "required": ["title", "problem_explanation", "fix_explanation", "technical_details"]
+    }
+    
+    model = get_gemini_model(response_schema=description_schema)
+    
+    # Build the prompt
+    vulnerability_info = json.dumps(vulnerability, indent=2)
+    node_info_str = json.dumps(node_info, indent=2) if node_info else "N/A"
+    
+    prompt = f"""You are a security expert writing a clear pull request description for a security fix.
+
+VULNERABILITY INFORMATION:
+{vulnerability_info}
+
+NODE INFORMATION:
+{node_info_str}
+
+GENERATED PATCH:
+{patch_content}
+
+TASK: Write a clear, human-readable explanation of this security issue and how it was fixed.
+
+GUIDELINES:
+1. Write for humans, not machines - use clear, natural language
+2. Explain WHY this was a security problem (what could go wrong?)
+3. Explain HOW the fix addresses the problem (what did we change and why?)
+4. Be specific but avoid excessive jargon
+5. Focus on the security implications and the solution
+6. Keep technical details separate from the main explanation
+
+Generate a comprehensive PR description that helps reviewers understand both the problem and the solution."""
+    
+    # Call Gemini API
+    response = model.generate_content(prompt)
+    
+    # Parse JSON response
+    try:
+        result = json.loads(response.text)
+        title = result.get("title", "Security Fix")
+        problem = result.get("problem_explanation", "")
+        fix = result.get("fix_explanation", "")
+        technical = result.get("technical_details", "")
+        
+        # Format the description
+        description = f"""## {title}
+
+### 🔒 Security Issue
+
+{problem}
+
+### ✅ How This Fix Addresses the Issue
+
+{fix}
+
+### 🔧 Technical Details
+
+{technical}
+
+### 📋 Additional Information
+
+**Vulnerability ID:** {vulnerability.get('id', 'N/A')}
+**Severity:** {vulnerability.get('severity', 'N/A')}
+**Node:** {node_info.get('name', 'N/A') if node_info else 'N/A'}
+
+---
+
+*This fix was automatically generated by Carakube's AI-powered security remediation system.*
+"""
+        
+        logger.info(f"[AUTOFIX] Generated PR description ({len(description)} chars)")
+        return description
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"[AUTOFIX] Failed to parse description response: {e}")
+        logger.error(f"[AUTOFIX] Raw response: {response.text[:500]}")
+        raise ValueError(f"Gemini returned invalid JSON for description: {e}")
 
 
 def apply_patch(repo_dir: Path, patch_content: str) -> None:
@@ -352,30 +497,39 @@ def fix_vulnerability(vulnerability: Dict[str, Any], node_info: Dict[str, Any] =
         commit_and_push_changes(repo_dir, branch_name, commit_message)
         print("[AUTOFIX] Changes committed and pushed", flush=True)
         
-        # Step 8: Create pull request
-        print("[AUTOFIX] Step 7: Creating pull request...", flush=True)
+        # Step 8: Generate human-readable PR description
+        print("[AUTOFIX] Step 7: Generating PR description...", flush=True)
+        pr_description = generate_pr_description(patch_content, vulnerability, node_info)
+        print(f"[AUTOFIX] PR description generated: {len(pr_description)} characters", flush=True)
+        
+        # Step 9: Create pull request
+        print("[AUTOFIX] Step 8: Creating pull request...", flush=True)
         pr_title = f"Auto-fix: Resolve {vuln_id}"
-        pr_body = f"""## Automated Security Fix
+        
+        # Append raw data for reference
+        pr_body = f"""{pr_description}
 
-**Vulnerability ID:** {vuln_id}
-**Severity:** {vulnerability.get('severity', 'N/A')}
+---
 
-### Vulnerability Details
+<details>
+<summary>Raw Vulnerability Data</summary>
+
 ```json
 {json.dumps(vulnerability, indent=2)}
 ```
 
-### Node Information
+</details>
+
+<details>
+<summary>Raw Node Information</summary>
+
 ```json
 {json.dumps(node_info, indent=2) if node_info else 'N/A'}
 ```
 
-### Fix Description
-This pull request was automatically generated by Carakube's auto-fix system using AI-powered analysis.
-The patch was generated by analyzing the vulnerability and the repository files to produce a minimal fix.
+</details>
 
-**Generated by:** Carakube Auto-fix System
-**Timestamp:** {timestamp}
+**Generated:** {timestamp}
 """
         
         pr_response = create_pull_request(branch_name, title=pr_title, body=pr_body)
