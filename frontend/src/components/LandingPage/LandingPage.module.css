@@ -611,6 +611,24 @@
   transform: translateY(-2px);
 }
 
+/* Footer */
+.footer {
+  padding: 32px 32px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footerContent {
+  text-align: center;
+  max-width: 100%;
+}
+
+.footerText {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero {
@@ -772,6 +790,14 @@
     width: 100%;
     justify-content: center;
   }
+
+  .footer {
+    padding: 24px 16px;
+  }
+
+  .footerText {
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -906,5 +932,13 @@
   .ctaButton {
     padding: 12px 24px;
     font-size: 0.9rem;
+  }
+
+  .footer {
+    padding: 20px 12px;
+  }
+
+  .footerText {
+    font-size: 0.75rem;
   }
 }

@@ -492,6 +492,17 @@ export const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <div className={styles.container}>
+          <div className={styles.footerContent}>
+            <p className={styles.footerText}>
+              © {new Date().getFullYear()} Carakube. Built for Siemens' HackaTUM Challenge 2025.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
