@@ -16,9 +16,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          port: 2222
+          port: 22
           script: |
-            cd carakube
+            cd /web/carakube
             git fetch
             git reset --hard origin/main
             export GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
