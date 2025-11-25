@@ -80,10 +80,15 @@ export const LandingPage = () => {
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.heroContent}>
-            <div className={styles.badge}>
+            <a
+              href="https://devpost.com/software/carakube"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.badge}
+            >
               <Activity size={14} />
               <span>Siemens HackaTUM 2025 Challenge</span>
-            </div>
+            </a>
 
             <h1 className={styles.title}>
               Kubernetes Security

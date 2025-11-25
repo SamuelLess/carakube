@@ -43,6 +43,14 @@
   max-width: 100%;
   box-sizing: border-box;
   word-break: break-word;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.badge:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
 }
 
 .title {
