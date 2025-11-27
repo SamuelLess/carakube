@@ -15,12 +15,6 @@ app = FastAPI(title="Carakube Operator API")
 GRAPH_OUTPUT_FILE = Path("/app/scanner_output/cluster_graph.json")
 
 
-@app.get("/health")
-async def health():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "carakube-operator"}
-
-
 @app.get("/test")
 async def test_endpoint():
     """Test endpoint for quick verification"""
